@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { IconArrowLeft, IconLightbulb } from "@/components/Icon";
 
 interface Question {
   id: string;
@@ -22,13 +23,17 @@ function QuestionsPageInner() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/game/stages").then(r => r.json()).then(setCategories);
+    fetch("/api/game/stages").then(r => r.json())
+      .then(d => setCategories(Array.isArray(d) ? d : []))
+      .catch(() => setCategories([]));
   }, []);
 
   useEffect(() => {
     if (!selectedStage) return;
     fetch("/api/teacher/questions?stageId=" + selectedStage)
-      .then(r => r.json()).then(setQuestions);
+      .then(r => r.json())
+      .then(d => setQuestions(Array.isArray(d) ? d : []))
+      .catch(() => setQuestions([]));
   }, [selectedStage]);
 
   async function save() {
@@ -56,7 +61,7 @@ function QuestionsPageInner() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
-        <Link href="/teacher" className="text-slate-400 hover:text-white text-sm">← Dashboard</Link>
+        <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
         <Link href="/teacher/stages" className="text-slate-400 hover:text-white text-sm">ด่าน</Link>
         <span className="font-pixel text-yellow-400 text-xs">จัดการโจทย์</span>
       </header>
@@ -103,7 +108,7 @@ function QuestionsPageInner() {
                       </span>
                     ))}
                   </div>
-                  {q.data.hint && <p className="text-slate-500 text-xs mt-1">💡 {q.data.hint}</p>}
+                  {q.data.hint && <p className="text-slate-500 text-xs mt-1 flex items-center gap-1"><IconLightbulb size={12} /> {q.data.hint}</p>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={() => setEditing({ ...q })} className="text-blue-400 hover:text-blue-300 text-xs">แก้ไข</button>

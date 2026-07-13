@@ -14,7 +14,7 @@ export async function GET() {
     }),
     prisma.user.findMany({
       where: { role: "STUDENT" },
-      orderBy: [{ classroom: "asc" }, { name: "asc" }],
+      orderBy: [{ grade: "asc" }, { room: "asc" }, { number: "asc" }],
       include: {
         sessions: {
           orderBy: { playedAt: "desc" },
@@ -34,12 +34,12 @@ export async function GET() {
       byStage[sess.stageId].push(sess);
     }
     for (const [stageId, sessions] of Object.entries(byStage)) {
-      const best = sessions.reduce((a, b) => a.score >= b.score ? a : b);
+      const best = sessions.reduce((a, b) => (a.score >= b.score ? a : b));
       scores[s.id][stageId] = {
         score: best.score,
         correct: best.correct,
         total: best.total,
-        passed: sessions.some(s => s.passed),
+        passed: sessions.some(sess => sess.passed),
         plays: sessions.length,
       };
     }
@@ -47,7 +47,7 @@ export async function GET() {
 
   return NextResponse.json({
     categories,
-    students: students.map(s => ({ id: s.id, name: s.name, classroom: s.classroom })),
+    students: students.map(s => ({ id: s.id, name: s.name, classroom: `ม.${s.grade}/${s.room}` })),
     scores,
   });
 }

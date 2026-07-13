@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { IconSword, IconPlay } from "@/components/Icon";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -25,7 +27,7 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: 380 }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>⚔️</div>
+          <div style={{ marginBottom: 12, color: "#f5a623", display: "flex", justifyContent: "center" }}><IconSword size={56} /></div>
           <h1 style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(14px,4vw,20px)", color: "#f5a623", marginBottom: 6 }}>
             Math Quest
           </h1>
@@ -40,12 +42,12 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit}>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#94a3b8", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>ชื่อผู้ใช้</label>
+              <label style={{ display: "block", color: "#94a3b8", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>เลขประจำตัวนักเรียน</label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="username"
+                placeholder="เลขประจำตัวนักเรียน"
                 required
                 style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "12px 14px", color: "#e2e8f0", fontSize: "clamp(13px,3vw,15px)", outline: "none", boxSizing: "border-box" }}
                 onFocus={e => (e.target.style.borderColor = "#60a5fa")}
@@ -83,13 +85,16 @@ export default function LoginPage() {
                 transition: "background 0.2s", opacity: loading ? 0.7 : 1,
               }}
             >
-              {loading ? "กำลังเข้าสู่ระบบ..." : "► เริ่มผจญภัย"}
+              {loading ? "กำลังเข้าสู่ระบบ..." : <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><IconPlay size={12} /> เริ่มผจญภัย</span>}
             </button>
           </form>
         </div>
 
-        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 20 }}>
-          นักเรียน: student1 / student123 · ครู: teacher / teacher123
+        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 8 }}>
+          ยังไม่มีบัญชี? <Link href="/register" style={{ color: "#60a5fa" }}>ลงทะเบียน</Link>
+        </p>
+        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(9px,2vw,11px)", marginTop: 6 }}>
+          <Link href="/privacy" style={{ color: "#475569" }}>นโยบายความเป็นส่วนตัว</Link>
         </p>
       </div>
     </div>

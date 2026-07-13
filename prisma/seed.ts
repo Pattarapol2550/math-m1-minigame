@@ -16,7 +16,19 @@ async function main() {
   await prisma.user.upsert({
     where: { username: "teacher" },
     update: {},
-    create: { username: "teacher", name: "คุณครู สมชาย", password: teacherPw, role: "TEACHER" },
+    create: {
+      username: "teacher",
+      name: "คุณครู สมชาย",
+      firstName: "สมชาย",
+      lastName: "ใจดี",
+      nickname: "ครูชาย",
+      studentId: "teacher",
+      grade: 0,
+      room: 0,
+      number: 0,
+      password: teacherPw,
+      role: "TEACHER",
+    },
   });
 
   for (let i = 1; i <= 5; i++) {
@@ -26,9 +38,15 @@ async function main() {
       create: {
         username: `student${i}`,
         name: `นักเรียน คนที่ ${i}`,
+        firstName: "นักเรียน",
+        lastName: `คนที่ ${i}`,
+        nickname: `คนที่${i}`,
+        studentId: `student${i}`,
+        grade: 1,
+        room: i <= 3 ? 1 : 2,
+        number: i,
         password: studentPw,
         role: "STUDENT",
-        classroom: i <= 3 ? "ม.1/1" : "ม.1/2",
       },
     });
   }

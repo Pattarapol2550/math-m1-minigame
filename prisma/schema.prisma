@@ -22,6 +22,33 @@ model User {
   createdAt DateTime @default(now())
 
   sessions  GameSession[]
+
+  @@index([grade, room])
+  @@index([role])
+}
+
+// Audit trail: who reset whose password, and when.
+model PasswordResetLog {
+  id              String   @id @default(cuid())
+  targetUserId    String
+  targetStudentId String
+  targetName      String
+  byUserId        String
+  byName          String
+  createdAt       DateTime @default(now())
+
+  @@index([targetUserId])
+  @@index([createdAt])
+}
+
+// Login throttling: one row per attempt, counted within a time window.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  username  String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([username, createdAt])
 }
 
 model Category {
@@ -44,6 +71,8 @@ model Stage {
   category  Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   questions Question[]
   sessions  GameSession[]
+
+  @@index([categoryId])
 }
 
 model Question {
@@ -55,6 +84,8 @@ model Question {
 
   stage    Stage             @relation(fields: [stageId], references: [id], onDelete: Cascade)
   attempts QuestionAttempt[]
+
+  @@index([stageId])
 }
 
 model GameSession {
@@ -72,6 +103,10 @@ model GameSession {
   user     User              @relation(fields: [userId], references: [id])
   stage    Stage             @relation(fields: [stageId], references: [id])
   attempts QuestionAttempt[]
+
+  @@index([userId])
+  @@index([stageId])
+  @@index([userId, stageId])
 }
 
 model QuestionAttempt {
@@ -84,6 +119,9 @@ model QuestionAttempt {
 
   session  GameSession @relation(fields: [sessionId], references: [id])
   question Question    @relation(fields: [questionId], references: [id])
+
+  @@index([sessionId])
+  @@index([questionId])
 }
 
 enum Role {

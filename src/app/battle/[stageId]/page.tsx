@@ -4,14 +4,37 @@ import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import HeroSprite from "@/components/sprites/HeroSprite";
 import EnemySprite from "@/components/sprites/EnemySprite";
+import {
+  IconHeart, IconHeartOff, IconStar, IconCheck, IconX, IconClock,
+  IconTrophy, IconSkull, IconArrowLeft, IconArrowRight, IconPlay,
+} from "@/components/Icon";
 
-const MAX_HP = 5;
-const TIMER_SECS = 100;
+import { MAX_HP, TIMER_SECS, scoreForAnswer } from "@/lib/game";
 
 interface Question {
   id: string;
   body: string;
-  data: { choices: string[]; answer: string; hint?: string };
+  data: { choices: string[] };
+}
+
+interface GradeResult {
+  isCorrect: boolean;
+  correctAnswer: string;
+  hint: string | null;
+}
+
+async function gradeAnswer(questionId: string, answer: string): Promise<GradeResult> {
+  try {
+    const res = await fetch("/api/game/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questionId, answer }),
+    });
+    if (!res.ok) throw new Error("grade failed");
+    return await res.json();
+  } catch {
+    return { isCorrect: false, correctAnswer: "", hint: null };
+  }
 }
 
 type Phase = "loading" | "intro" | "question" | "feedback" | "win" | "dead";
@@ -24,12 +47,13 @@ export default function BattlePage() {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [stageInfo, setStageInfo] = useState<{ name: string; enemyName: string; enemyEmoji: string } | null>(null);
+  const [nextStageId, setNextStageId] = useState<string | null>(null);
   const [qIndex, setQIndex] = useState(0);
   const [hp, setHp] = useState(MAX_HP);
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [phase, setPhase] = useState<Phase>("loading");
-  const [feedback, setFeedback] = useState<{ type: FeedbackType; msg: string; pts?: number } | null>(null);
+  const [feedback, setFeedback] = useState<{ type: FeedbackType; msg: string; pts?: number; correctAnswer?: string } | null>(null);
   const [chosenAnswer, setChosenAnswer] = useState<string | null>(null);
   const [heroAnim, setHeroAnim] = useState("");
   const [enemyAnim, setEnemyAnim] = useState("");
@@ -37,12 +61,18 @@ export default function BattlePage() {
   const [startTime, setStartTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [attempts, setAttempts] = useState<any[]>([]);
-  const [savedScore, setSavedScore] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockedRef = useRef(false);
   const questionsRef = useRef<Question[]>([]);
 
   useEffect(() => {
+    stopTimer();
+    setPhase("loading");
+    setQIndex(0); setHp(MAX_HP); setScore(0); setCorrectCount(0);
+    setAttempts([]); setTotalTime(0);
+    setChosenAnswer(null); setFeedback(null);
+    setHeroAnim(""); setEnemyAnim(""); lockedRef.current = false;
+
     Promise.all([
       fetch(`/api/game/stages/${stageId}/questions`).then(r => r.json()),
       fetch("/api/game/stages").then(r => r.json()),
@@ -50,8 +80,12 @@ export default function BattlePage() {
       questionsRef.current = qs;
       setQuestions(qs);
       for (const c of cats) {
-        const s = c.stages.find((st: any) => st.id === stageId);
-        if (s) { setStageInfo(s); break; }
+        const idx = c.stages.findIndex((st: any) => st.id === stageId);
+        if (idx !== -1) {
+          setStageInfo(c.stages[idx]);
+          setNextStageId(c.stages[idx + 1]?.id ?? null);
+          break;
+        }
       }
       setPhase("intro");
       setTimeout(() => beginQuestion(0), 1200);
@@ -79,51 +113,55 @@ export default function BattlePage() {
     }, 1000);
   }
 
-  function onTimeout(idx: number) {
+  async function onTimeout(idx: number) {
     if (lockedRef.current) return;
     lockedRef.current = true;
     setChosenAnswer("");
-    handleResult(idx, "", false, TIMER_SECS, "timeout");
+    const q = questionsRef.current[idx];
+    const graded = q ? await gradeAnswer(q.id, "") : { isCorrect: false, correctAnswer: "", hint: null };
+    handleResult(idx, "", false, TIMER_SECS, "timeout", graded.correctAnswer, graded.hint);
   }
 
-  function handleAnswer(chosen: string, idx: number) {
+  async function handleAnswer(chosen: string, idx: number) {
     if (lockedRef.current || phase !== "question") return;
     lockedRef.current = true;
     stopTimer();
     const spent = Math.round((Date.now() - startTime) / 1000);
     const q = questionsRef.current[idx];
     if (!q) return;
-    const isCorrect = chosen === q.data.answer;
     setChosenAnswer(chosen);
-    handleResult(idx, chosen, isCorrect, spent, isCorrect ? "correct" : "wrong");
+    const graded = await gradeAnswer(q.id, chosen);
+    handleResult(idx, chosen, graded.isCorrect, spent, graded.isCorrect ? "correct" : "wrong", graded.correctAnswer, graded.hint);
   }
 
-  function handleResult(idx: number, chosen: string, isCorrect: boolean, spent: number, type: FeedbackType) {
+  function handleResult(idx: number, chosen: string, isCorrect: boolean, spent: number, type: FeedbackType, correctAnswer: string, hint: string | null) {
     const q = questionsRef.current[idx];
     if (!q) return;
     setTotalTime(t => t + spent);
-    setAttempts(prev => [...prev, { questionId: q.id, answer: chosen, isCorrect, timeSpent: spent }]);
+    const newAttempt = { questionId: q.id, answer: chosen, isCorrect, timeSpent: spent };
+    const allAttempts = [...attempts, newAttempt];
+    setAttempts(allAttempts);
 
     if (isCorrect) {
-      const pts = Math.max(10, 30 - spent * 2);
-      setScore(s => { setSavedScore(s + pts); return s + pts; });
+      const pts = scoreForAnswer(spent);
+      setScore(s => s + pts);
       setCorrectCount(c => c + 1);
-      setFeedback({ type: "correct", msg: "ถูกต้อง!", pts });
+      setFeedback({ type: "correct", msg: "ถูกต้อง!", pts, correctAnswer });
       setHeroAnim("anim-hero-attack");
       setTimeout(() => { setEnemyAnim("anim-flash"); }, 350);
       setTimeout(() => { setEnemyAnim(""); setHeroAnim(""); }, 700);
     } else {
       const newHp = Math.max(0, hp - 1);
       setHp(newHp);
-      const hint = q.data.hint ?? `คำตอบที่ถูก: ${q.data.answer}`;
-      setFeedback({ type: type === "timeout" ? "timeout" : "wrong", msg: hint });
+      const msg = hint ?? (correctAnswer ? `คำตอบที่ถูก: ${correctAnswer}` : "ตอบผิด");
+      setFeedback({ type: type === "timeout" ? "timeout" : "wrong", msg, correctAnswer });
       setEnemyAnim("anim-enemy-attack");
       setTimeout(() => { setHeroAnim("anim-flash"); }, 350);
       setTimeout(() => { setEnemyAnim(""); setHeroAnim(""); }, 700);
 
       if (newHp <= 0) {
         setTimeout(() => { setHeroAnim("anim-die"); }, 900);
-        setTimeout(() => { setPhase("dead"); saveSession(false, attempts, 0); }, 1800);
+        setTimeout(() => { setPhase("dead"); saveSession(allAttempts); }, 1800);
         return;
       }
     }
@@ -132,29 +170,26 @@ export default function BattlePage() {
     const next = idx + 1;
     if (next >= questionsRef.current.length) {
       setTimeout(() => { setEnemyAnim("anim-die"); }, 900);
-      setTimeout(() => {
-        setPhase("win");
-        saveSession(true, [...attempts, { questionId: q.id, answer: chosen, isCorrect, timeSpent: spent }],
-          isCorrect ? Math.max(10, 30 - spent * 2) : 0);
-      }, 1800);
+      setTimeout(() => { setPhase("win"); saveSession(allAttempts); }, 1800);
     } else {
       setTimeout(() => beginQuestion(next), 1600);
     }
   }
 
-  async function saveSession(passed: boolean, finalAttempts: any[], lastPts: number) {
+  async function saveSession(finalAttempts: { questionId: string; answer: string; timeSpent: number }[]) {
     if (!session?.user) return;
-    const finalScore = passed ? savedScore : score;
-    await fetch("/api/game/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        stageId, score: finalScore,
-        correct: correctCount + (passed && finalAttempts.at(-1)?.isCorrect ? 1 : 0),
-        total: questions.length, hpLeft: passed ? hp : 0,
-        passed, timeSpent: totalTime, attempts: finalAttempts,
-      }),
-    });
+    try {
+      await fetch("/api/game/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stageId,
+          attempts: finalAttempts.map(a => ({ questionId: a.questionId, answer: a.answer, timeSpent: a.timeSpent })),
+        }),
+      });
+    } catch {
+      // best-effort; the run already displayed locally
+    }
   }
 
   function restart() {
@@ -231,8 +266,11 @@ export default function BattlePage() {
             </div>
             <span style={{ fontSize: "clamp(7px,1.5vw,9px)", color: "#202820", fontWeight: "bold" }}>{hp}/{MAX_HP}</span>
           </div>
-          <div style={{ fontSize: "clamp(8px,1.8vw,11px)", letterSpacing: 1 }}>
-            {Array.from({ length: MAX_HP }, (_, i) => i < hp ? "❤️" : "🖤").join("")}
+          <div style={{ display: "flex", gap: 1 }}>
+            {Array.from({ length: MAX_HP }, (_, i) => i < hp
+              ? <IconHeart key={i} size={12} style={{ color: "#f84018" }} />
+              : <IconHeartOff key={i} size={12} style={{ color: "#b0a890" }} />
+            )}
           </div>
         </div>
       </div>
@@ -250,8 +288,10 @@ export default function BattlePage() {
         {/* INTRO */}
         {phase === "intro" && (
           <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "16px 20px", background: "#f0e8c8", fontFamily: "monospace" }}>
-            <p style={{ color: "#202820", fontSize: "clamp(11px, 2.5vw, 14px)", fontWeight: "bold", lineHeight: 1.8 }}>
-              ▶ {stageInfo?.enemyEmoji} {stageInfo?.enemyName} ปรากฏตัว!
+            <p style={{ color: "#202820", fontSize: "clamp(11px, 2.5vw, 14px)", fontWeight: "bold", lineHeight: 1.8, display: "flex", alignItems: "center", gap: 6 }}>
+              <IconPlay size={12} />
+              {stageInfo && <EnemySprite type={stageInfo.enemyName} size={22} style={{ flexShrink: 0 }} />}
+              {stageInfo?.enemyName} ปรากฏตัว!
             </p>
           </div>
         )}
@@ -276,8 +316,8 @@ export default function BattlePage() {
                 ))}
               </div>
               {/* Score */}
-              <span style={{ fontFamily: "monospace", fontSize: "clamp(9px,2vw,11px)", color: "#c07800", fontWeight: "bold", whiteSpace: "nowrap" }}>
-                ⭐ {score}
+              <span style={{ fontFamily: "monospace", fontSize: "clamp(9px,2vw,11px)", color: "#c07800", fontWeight: "bold", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 3 }}>
+                <IconStar size={13} /> {score}
               </span>
               {/* Timer circle */}
               <div style={{ position: "relative", width: "clamp(28px,6vw,36px)", height: "clamp(28px,6vw,36px)", flexShrink: 0 }}>
@@ -319,7 +359,7 @@ export default function BattlePage() {
                 alignItems: "center",
                 gap: 8,
               }}>
-                <span>{feedback.type === "correct" ? "✓" : feedback.type === "timeout" ? "⏰" : "✗"}</span>
+                <span style={{ display: "inline-flex" }}>{feedback.type === "correct" ? <IconCheck size={15} /> : feedback.type === "timeout" ? <IconClock size={15} /> : <IconX size={15} />}</span>
                 <span style={{ flex: 1 }}>{feedback.msg}</span>
                 {feedback.pts && <span style={{ color: "#2a7010" }}>+{feedback.pts}pt</span>}
               </div>
@@ -329,7 +369,7 @@ export default function BattlePage() {
             <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
               {q.data.choices.map((c, i) => {
                 const isChosen = chosenAnswer === c;
-                const isCorrectChoice = c === q.data.answer;
+                const isCorrectChoice = phase === "feedback" && !!feedback?.correctAnswer && c === feedback.correctAnswer;
                 let bg = "#f0e8c8";
                 let border = "#909090";
                 let color = "#202820";
@@ -379,7 +419,7 @@ export default function BattlePage() {
         {phase === "win" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 20, background: "#f0e8c8" }}>
-              <div style={{ fontSize: "clamp(24px,6vw,36px)" }}>🎉</div>
+              <div style={{ color: "#e0a020", display: "flex" }}><IconTrophy size={36} /></div>
               <p style={{ fontFamily: "monospace", fontSize: "clamp(12px,2.8vw,16px)", fontWeight: "bold", color: "#186010" }}>ชนะแล้ว!</p>
               <p style={{ fontFamily: "monospace", fontSize: "clamp(10px,2.2vw,13px)", color: "#405020" }}>
                 ตอบถูก {correctCount}/{questions.length} ข้อ · {score} คะแนน
@@ -388,15 +428,21 @@ export default function BattlePage() {
                 HP เหลือ {hp}/{MAX_HP} · Accuracy {Math.round(correctCount / questions.length * 100)}%
               </p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "2.5px solid #202820" }}>
+            <div style={{ display: "grid", gridTemplateColumns: nextStageId ? "1fr 1fr 1fr" : "1fr 1fr", borderTop: "2.5px solid #202820" }}>
               <button onClick={() => router.push("/map")}
-                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", borderRight: "2px solid #202820", cursor: "pointer", color: "#404040" }}>
-                ← แผนที่
+                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", borderRight: "2px solid #202820", cursor: "pointer", color: "#404040", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <IconArrowLeft size={15} /> แผนที่
               </button>
               <button onClick={restart}
-                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", cursor: "pointer", color: "#186010" }}>
-                ► เล่นอีกครั้ง
+                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", borderRight: nextStageId ? "2px solid #202820" : "none", cursor: "pointer", color: "#186010", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <IconPlay size={13} /> เล่นอีกครั้ง
               </button>
+              {nextStageId && (
+                <button onClick={() => router.push(`/battle/${nextStageId}`)}
+                  style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#f5a623", border: "none", cursor: "pointer", color: "#1a1a2e", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  ด่านถัดไป <IconArrowRight size={15} />
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -405,7 +451,7 @@ export default function BattlePage() {
         {phase === "dead" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 20, background: "#f0e8c8" }}>
-              <div style={{ fontSize: "clamp(24px,6vw,36px)" }}>💀</div>
+              <div style={{ color: "#801008", display: "flex" }}><IconSkull size={36} /></div>
               <p style={{ fontFamily: "monospace", fontSize: "clamp(12px,2.8vw,16px)", fontWeight: "bold", color: "#801008" }}>หมดพลังชีวิต!</p>
               <p style={{ fontFamily: "monospace", fontSize: "clamp(10px,2.2vw,13px)", color: "#806040" }}>
                 ตอบถูก {correctCount}/{questions.length} ข้อ · {score} คะแนน
@@ -413,12 +459,12 @@ export default function BattlePage() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "2.5px solid #202820" }}>
               <button onClick={() => router.push("/map")}
-                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", borderRight: "2px solid #202820", cursor: "pointer", color: "#404040" }}>
-                ← แผนที่
+                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", borderRight: "2px solid #202820", cursor: "pointer", color: "#404040", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <IconArrowLeft size={15} /> แผนที่
               </button>
               <button onClick={restart}
-                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", cursor: "pointer", color: "#801008" }}>
-                ► ลองใหม่
+                style={{ padding: "clamp(12px,3vw,18px)", fontFamily: "monospace", fontSize: "clamp(11px,2.5vw,14px)", fontWeight: "bold", background: "#e8e0b8", border: "none", cursor: "pointer", color: "#801008", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <IconPlay size={13} /> ลองใหม่
               </button>
             </div>
           </div>

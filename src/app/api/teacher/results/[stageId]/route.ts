@@ -16,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ stageId
       where: { stageId },
       orderBy: { playedAt: "desc" },
       include: {
-        user: { select: { id: true, name: true, classroom: true } },
+        user: { select: { id: true, name: true, grade: true, room: true } },
         attempts: { select: { questionId: true, answer: true, isCorrect: true, timeSpent: true } },
       },
     }),
@@ -29,9 +29,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ stageId
   }
 
   const studentSessions = Object.values(latestByStudent).sort((a, b) => {
-    const ca = a.user.classroom ?? "";
-    const cb = b.user.classroom ?? "";
-    return ca.localeCompare(cb) || a.user.name.localeCompare(b.user.name);
+    if (a.user.grade !== b.user.grade) return a.user.grade - b.user.grade;
+    if (a.user.room !== b.user.room) return a.user.room - b.user.room;
+    return a.user.name.localeCompare(b.user.name);
   });
 
   // attempts map: studentId → questionId → attempt
@@ -53,7 +53,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ stageId
     sessions: studentSessions.map(s => ({
       userId: s.userId,
       name: s.user.name,
-      classroom: s.user.classroom,
+      classroom: `ม.${s.user.grade}/${s.user.room}`,
       score: s.score,
       correct: s.correct,
       total: s.total,

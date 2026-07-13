@@ -1,22 +1,34 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ExcelJS from "exceljs";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if ((session?.user as any)?.role !== "TEACHER")
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const { searchParams } = new URL(req.url);
+  const gradeParam = searchParams.get("grade");
+  const roomParam = searchParams.get("room");
+  const categoryId = searchParams.get("categoryId");
+  const grade = gradeParam && !Number.isNaN(Number(gradeParam)) ? Number(gradeParam) : undefined;
+  const room = roomParam && !Number.isNaN(Number(roomParam)) ? Number(roomParam) : undefined;
+
   const students = await prisma.user.findMany({
-    where: { role: "STUDENT" },
+    where: {
+      role: "STUDENT",
+      ...(grade !== undefined ? { grade } : {}),
+      ...(room !== undefined ? { room } : {}),
+    },
     include: {
       sessions: {
+        where: categoryId ? { stage: { categoryId } } : undefined,
         include: { stage: { include: { category: true } } },
         orderBy: { playedAt: "desc" },
       },
     },
-    orderBy: [{ classroom: "asc" }, { name: "asc" }],
+    orderBy: [{ grade: "asc" }, { room: "asc" }, { number: "asc" }],
   });
 
   const wb = new ExcelJS.Workbook();
@@ -40,7 +52,7 @@ export async function GET() {
     for (const s of student.sessions) {
       ws.addRow({
         name: student.name,
-        classroom: student.classroom ?? "-",
+        classroom: `ม.${student.grade}/${student.room}`,
         mode: s.stage.category.name,
         stage: s.stage.name,
         score: s.score,
@@ -53,10 +65,14 @@ export async function GET() {
   }
 
   const buffer = await wb.xlsx.writeBuffer();
+  const parts = ["math-results"];
+  if (grade !== undefined) parts.push(`ม${grade}${room !== undefined ? `-${room}` : ""}`);
+  const filename = parts.join("-") + ".xlsx";
+
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": 'attachment; filename="math-results.xlsx"',
+      "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
 }

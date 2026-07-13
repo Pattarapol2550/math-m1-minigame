@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('STUDENT', 'TEACHER');
 
@@ -5,10 +8,16 @@ CREATE TYPE "Role" AS ENUM ('STUDENT', 'TEACHER');
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "nickname" TEXT NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "grade" INTEGER NOT NULL,
+    "room" INTEGER NOT NULL,
+    "number" INTEGER NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'STUDENT',
-    "classroom" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -76,6 +85,9 @@ CREATE TABLE "QuestionAttempt" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_studentId_key" ON "User"("studentId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- AddForeignKey
@@ -95,3 +107,4 @@ ALTER TABLE "QuestionAttempt" ADD CONSTRAINT "QuestionAttempt_sessionId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "QuestionAttempt" ADD CONSTRAINT "QuestionAttempt_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

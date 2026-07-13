@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { IconArrowLeft, IconMap, IconBook, IconEdit } from "@/components/Icon";
 
 interface Stage {
   id: string;
@@ -33,7 +34,9 @@ export default function StagesPage() {
   const [error, setError] = useState("");
 
   function load() {
-    fetch("/api/teacher/stages").then(r => r.json()).then(setCategories);
+    fetch("/api/teacher/stages").then(r => r.json())
+      .then(d => setCategories(Array.isArray(d) ? d : []))
+      .catch(() => setCategories([]));
   }
 
   useEffect(() => { load(); }, []);
@@ -73,8 +76,8 @@ export default function StagesPage() {
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/teacher" className="text-slate-400 hover:text-white text-sm">← Dashboard</Link>
-          <span className="font-pixel text-yellow-400 text-xs">จัดการด่าน</span>
+          <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
+          <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconMap size={14} /> จัดการด่าน</span>
         </div>
         <button
           onClick={() => { setEditing({ ...EMPTY_STAGE }); setError(""); }}
@@ -88,12 +91,12 @@ export default function StagesPage() {
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-            <div className="text-2xl mb-1">🗺️</div>
+            <div className="text-yellow-400 mb-2"><IconMap size={26} /></div>
             <div className="font-pixel text-yellow-400 text-lg">{totalStages}</div>
             <div className="text-slate-400 text-xs mt-1">ด่านทั้งหมด</div>
           </div>
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-            <div className="text-2xl mb-1">📚</div>
+            <div className="text-yellow-400 mb-2"><IconBook size={26} /></div>
             <div className="font-pixel text-yellow-400 text-lg">{categories.length}</div>
             <div className="text-slate-400 text-xs mt-1">หมวดหมู่</div>
           </div>
@@ -132,9 +135,9 @@ export default function StagesPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       <Link
                         href={`/teacher/questions?stage=${stage.id}`}
-                        className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded transition-colors"
+                        className="inline-flex items-center gap-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded transition-colors"
                       >
-                        📝 โจทย์
+                        <IconEdit size={13} /> โจทย์
                       </Link>
                       <button
                         onClick={() => { setEditing({ ...stage }); setError(""); }}

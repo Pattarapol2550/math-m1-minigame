@@ -6,13 +6,16 @@ export default auth(req => {
   const isLoggedIn = !!req.auth;
   const role = (req.auth?.user as any)?.role;
 
-  if (!isLoggedIn && !pathname.startsWith("/login")) {
+  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isPublic = isAuthPage || pathname.startsWith("/privacy");
+
+  if (!isLoggedIn && !isPublic) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
   if (isLoggedIn && pathname.startsWith("/teacher") && role !== "TEACHER") {
     return NextResponse.redirect(new URL("/map", req.url));
   }
-  if (isLoggedIn && pathname === "/login") {
+  if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 });

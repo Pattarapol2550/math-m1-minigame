@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import EnemySprite from "@/components/sprites/EnemySprite";
+import {
+  IconSword, IconUser, IconChart, IconMap, IconPlay, IconSettings, IconCrown,
+  IconTent, IconTree, IconMountain, IconCastle, IconFlame, IconZap, IconGem,
+} from "@/components/Icon";
 
 interface Stage {
   id: string;
@@ -19,7 +24,7 @@ interface Category {
   stages: Stage[];
 }
 
-const STAGE_ICONS = ["🏕️", "🌲", "🏔️", "🏯", "🐲", "⚡", "🔮", "👑"];
+const STAGE_ICONS = [IconTent, IconTree, IconMountain, IconCastle, IconFlame, IconZap, IconGem, IconCrown];
 const BG = "linear-gradient(160deg, #0f0c29 0%, #1a1a4e 40%, #24243e 100%)";
 
 export default function MapPage() {
@@ -28,11 +33,13 @@ export default function MapPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeMode, setActiveMode] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     fetch("/api/game/stages")
       .then(r => r.json())
-      .then(data => { setCategories(data); setLoading(false); });
+      .then(data => { setCategories(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => { setLoadError(true); setLoading(false); });
   }, []);
 
   const cat = categories[activeMode];
@@ -41,10 +48,12 @@ export default function MapPage() {
     <div style={{ minHeight: "100svh", background: BG, display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <header style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 20 }}>
-        <span style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(9px,2.5vw,13px)", color: "#f5a623", letterSpacing: 1 }}>⚔ Math Quest</span>
+        <span style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(9px,2.5vw,13px)", color: "#f5a623", letterSpacing: 1, display: "inline-flex", alignItems: "center", gap: 6 }}><IconSword size={16} /> Math Quest</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ color: "#94a3b8", fontSize: "clamp(11px,2.5vw,14px)" }}>👤 {session?.user?.name}</span>
-          <Link href="/stats" style={{ color: "#60a5fa", fontSize: "clamp(11px,2.5vw,13px)", textDecoration: "none" }}>📊</Link>
+          <span style={{ color: "#94a3b8", fontSize: "clamp(11px,2.5vw,14px)", display: "inline-flex", alignItems: "center", gap: 5 }}><IconUser size={15} /> {session?.user?.name}</span>
+          <Link href="/leaderboard" style={{ color: "#f5c518", display: "inline-flex", alignItems: "center", textDecoration: "none" }}><IconCrown size={18} /></Link>
+          <Link href="/stats" style={{ color: "#60a5fa", display: "inline-flex", alignItems: "center", textDecoration: "none" }}><IconChart size={18} /></Link>
+          <Link href="/settings" style={{ color: "#64748b", display: "inline-flex", alignItems: "center", textDecoration: "none" }}><IconSettings size={18} /></Link>
           <button onClick={() => signOut({ callbackUrl: "/login" })} style={{ color: "#64748b", fontSize: "clamp(11px,2.5vw,13px)", background: "none", border: "none", cursor: "pointer" }}>ออก</button>
         </div>
       </header>
@@ -52,7 +61,7 @@ export default function MapPage() {
       <main style={{ flex: 1, maxWidth: 640, width: "100%", margin: "0 auto", padding: "20px 16px 32px" }}>
         {/* Hero banner */}
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: "clamp(40px,10vw,60px)", marginBottom: 8 }}>🗺️</div>
+          <div style={{ marginBottom: 8, color: "#f5a623", display: "flex", justifyContent: "center" }}><IconMap size={56} /></div>
           <h1 style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(12px,3vw,18px)", color: "#f5a623", marginBottom: 4 }}>เลือกด่าน</h1>
           <p style={{ color: "#64748b", fontSize: "clamp(11px,2.5vw,13px)" }}>เลือกโหมดและด่านที่ต้องการเล่น</p>
         </div>
@@ -76,6 +85,8 @@ export default function MapPage() {
         {/* Stage list */}
         {loading ? (
           <div style={{ textAlign: "center", color: "#64748b", padding: 48, fontFamily: "var(--font-pixel), monospace", fontSize: 11 }}>กำลังโหลด...</div>
+        ) : loadError ? (
+          <div style={{ textAlign: "center", color: "#f87171", padding: 48, fontSize: 14 }}>โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้า</div>
         ) : !cat ? (
           <div style={{ textAlign: "center", color: "#64748b", padding: 48, fontSize: 14 }}>ยังไม่มีเนื้อหา</div>
         ) : (
@@ -91,22 +102,22 @@ export default function MapPage() {
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
               >
                 {/* Stage icon */}
-                <div style={{ width: "clamp(44px,10vw,56px)", height: "clamp(44px,10vw,56px)", background: "rgba(255,255,255,0.07)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(22px,5vw,30px)", flexShrink: 0 }}>
-                  {STAGE_ICONS[idx] ?? "⚔️"}
+                <div style={{ width: "clamp(44px,10vw,56px)", height: "clamp(44px,10vw,56px)", background: "rgba(255,255,255,0.07)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "#f5a623", flexShrink: 0 }}>
+                  {(() => { const StageIcon = STAGE_ICONS[idx] ?? IconSword; return <StageIcon size={28} />; })()}
                 </div>
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(9px,2.2vw,12px)", color: "#e2e8f0", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     ด่าน {idx + 1}: {stage.name}
                   </div>
-                  <div style={{ fontSize: "clamp(11px,2.5vw,13px)", color: "#94a3b8" }}>
-                    {stage.enemyEmoji} {stage.enemyName}
+                  <div style={{ fontSize: "clamp(11px,2.5vw,13px)", color: "#94a3b8", display: "flex", alignItems: "center", gap: 6 }}>
+                    <EnemySprite type={stage.enemyName} size={20} style={{ flexShrink: 0 }} /> {stage.enemyName}
                   </div>
                   <div style={{ fontSize: "clamp(10px,2.2vw,12px)", color: "#475569", marginTop: 2 }}>
                     {stage._count.questions} คำถาม
                   </div>
                 </div>
-                <div style={{ color: "#60a5fa", fontSize: "clamp(16px,4vw,22px)", flexShrink: 0 }}>▶</div>
+                <div style={{ color: "#60a5fa", flexShrink: 0, display: "flex" }}><IconPlay size={18} /></div>
               </button>
             ))}
           </div>

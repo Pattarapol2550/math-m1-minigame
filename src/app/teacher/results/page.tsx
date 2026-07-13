@@ -1,6 +1,19 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { IconArrowLeft, IconChart, IconCheck, IconX, IconHeart, IconHeartOff, IconLightbulb, IconDownload } from "@/components/Icon";
+
+function Hearts({ hp, max = 5 }: { hp: number; max?: number }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {Array.from({ length: max }, (_, i) =>
+        i < hp
+          ? <IconHeart key={i} size={13} className="text-red-400" />
+          : <IconHeartOff key={i} size={13} className="text-slate-600" />
+      )}
+    </span>
+  );
+}
 
 interface Student { id: string; name: string; classroom: string | null }
 interface Stage { id: string; name: string; order: number }
@@ -25,6 +38,7 @@ function ResultsPageInner() {
   const [scores, setScores] = useState<Record<string, Record<string, ScoreEntry>>>({});
   const [loading, setLoading] = useState(true);
   const [filterClass, setFilterClass] = useState("");
+  const [filterCat, setFilterCat] = useState(""); // "" = all topics
 
   // Stage drill-down (full grid view)
   const [drill, setDrill] = useState<DrillData | null>(null);
@@ -37,7 +51,13 @@ function ResultsPageInner() {
   useEffect(() => {
     fetch("/api/teacher/results")
       .then(r => r.json())
-      .then(d => { setCategories(d.categories); setStudents(d.students); setScores(d.scores); setLoading(false); });
+      .then(d => {
+        setCategories(Array.isArray(d.categories) ? d.categories : []);
+        setStudents(Array.isArray(d.students) ? d.students : []);
+        setScores(d.scores ?? {});
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   async function fetchDrill(stageId: string): Promise<DrillData> {
@@ -68,6 +88,16 @@ function ResultsPageInner() {
 
   const classrooms = [...new Set(students.map(s => s.classroom).filter(Boolean))].sort() as string[];
   const filteredStudents = filterClass ? students.filter(s => s.classroom === filterClass) : students;
+  const visibleCategories = filterCat ? categories.filter(c => c.id === filterCat) : categories;
+
+  const exportUrl = (() => {
+    const params = new URLSearchParams();
+    const m = filterClass.match(/^ม\.(\d+)\/(\d+)$/);
+    if (m) { params.set("grade", m[1]); params.set("room", m[2]); }
+    if (filterCat) params.set("categoryId", filterCat);
+    const qs = params.toString();
+    return "/api/teacher/export" + (qs ? "?" + qs : "");
+  })();
 
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm">กำลังโหลด...</div>
@@ -77,10 +107,22 @@ function ResultsPageInner() {
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <Link href="/teacher" className="text-slate-400 hover:text-white text-sm">← Dashboard</Link>
-          <span className="font-pixel text-yellow-400 text-xs">คะแนนนักเรียน</span>
+          <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+            <IconArrowLeft size={16} /> Dashboard
+          </Link>
+          <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5">
+            <IconChart size={14} /> คะแนนนักเรียน
+          </span>
         </div>
         <div className="flex gap-2 items-center">
+          <select
+            value={filterCat}
+            onChange={e => setFilterCat(e.target.value)}
+            className="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white text-sm focus:outline-none"
+          >
+            <option value="">ทุกหัวข้อ</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
           <select
             value={filterClass}
             onChange={e => setFilterClass(e.target.value)}
@@ -90,13 +132,22 @@ function ResultsPageInner() {
             {classrooms.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <span className="text-slate-500 text-xs">{filteredStudents.length} คน</span>
+          <a
+            href={exportUrl}
+            className="flex items-center gap-1.5 bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <IconDownload size={14} /> Export Excel
+          </a>
         </div>
       </header>
 
       <main className="px-4 py-6 max-w-full overflow-x-auto">
-        <p className="text-slate-500 text-xs mb-4">💡 คลิกที่ <span className="text-blue-400">ชื่อด่าน</span> เพื่อดูภาพรวมทั้งห้อง · คลิกที่ <span className="text-yellow-400">ช่องคะแนน</span> เพื่อดูรายข้อของนักเรียนคนนั้น</p>
+        <p className="text-slate-500 text-xs mb-4 flex items-center gap-1.5"><IconLightbulb size={14} /> คลิกที่ <span className="text-blue-400">ชื่อด่าน</span> เพื่อดูภาพรวมทั้งห้อง · คลิกที่ <span className="text-yellow-400">ช่องคะแนน</span> เพื่อดูรายข้อของนักเรียนคนนั้น</p>
 
-        {categories.map(cat => (
+        {visibleCategories.length === 0 && (
+          <p className="text-slate-500 text-sm text-center py-10">ไม่มีหัวข้อให้แสดง</p>
+        )}
+        {visibleCategories.map(cat => (
           <div key={cat.id} className="mb-8">
             <h2 className="text-slate-300 font-medium text-sm mb-3 flex items-center gap-2">
               {cat.name}
@@ -159,8 +210,8 @@ function ResultsPageInner() {
                                     <div className={`font-pixel text-xs group-hover:text-yellow-300 ${e.passed ? "text-yellow-400" : "text-slate-400"}`}>{e.score}</div>
                                     <div className="text-slate-500 text-[10px] mt-0.5">{acc}% · {e.plays}ครั้ง</div>
                                     {e.passed
-                                      ? <div className="text-green-500 text-[10px]">✓ผ่าน</div>
-                                      : <div className="text-red-500/70 text-[10px]">✗ไม่ผ่าน</div>
+                                      ? <div className="text-green-500 text-[10px] flex items-center justify-center gap-0.5"><IconCheck size={10} />ผ่าน</div>
+                                      : <div className="text-red-500/70 text-[10px] flex items-center justify-center gap-0.5"><IconX size={10} />ไม่ผ่าน</div>
                                     }
                                   </>
                                 )}
@@ -196,7 +247,7 @@ function ResultsPageInner() {
                 )}
                 {drillLoading && <div className="text-slate-400 text-sm">กำลังโหลด...</div>}
               </div>
-              <button onClick={() => setDrill(null)} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+              <button onClick={() => setDrill(null)} className="text-slate-400 hover:text-white leading-none"><IconX size={20} /></button>
             </div>
 
             {drill && (
@@ -247,9 +298,7 @@ function ResultsPageInner() {
                               <div className="text-slate-500 text-[10px]">{sess.total > 0 ? Math.round(sess.correct / sess.total * 100) : 0}%</div>
                             </td>
                             <td className="px-2 py-2 text-center">
-                              <div className={`text-xs ${sess.hpLeft > 2 ? "text-green-400" : sess.hpLeft > 0 ? "text-yellow-400" : "text-red-400"}`}>
-                                {"♥".repeat(sess.hpLeft)}{"♡".repeat(Math.max(0, 5 - sess.hpLeft))}
-                              </div>
+                              <div className="flex justify-center"><Hearts hp={sess.hpLeft} /></div>
                             </td>
                             {drill.questions.map(q => {
                               const a = att[q.id];
@@ -257,8 +306,8 @@ function ResultsPageInner() {
                               return (
                                 <td key={q.id} className="px-1 py-2 text-center" title={`ตอบ: ${a.answer} (${a.timeSpent}วิ)`}>
                                   {a.isCorrect
-                                    ? <span className="text-green-400 text-sm">✓</span>
-                                    : <span className="text-red-400 text-sm">✗</span>
+                                    ? <IconCheck size={15} className="inline text-green-400" />
+                                    : <IconX size={15} className="inline text-red-400" />
                                   }
                                 </td>
                               );
@@ -301,7 +350,7 @@ function ResultsPageInner() {
                   {studentDetail.sess.classroom && <span className="ml-2">· ห้อง {studentDetail.sess.classroom}</span>}
                 </div>
               </div>
-              <button onClick={() => setStudentDetail(null)} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+              <button onClick={() => setStudentDetail(null)} className="text-slate-400 hover:text-white leading-none"><IconX size={20} /></button>
             </div>
 
             <div className="grid grid-cols-4 gap-px bg-slate-700 border-b border-slate-700">
@@ -309,7 +358,7 @@ function ResultsPageInner() {
                 { label: "คะแนน", value: <span className="font-pixel text-yellow-400">{studentDetail.sess.score}</span> },
                 { label: "ถูกต้อง", value: <span className="text-green-400">{studentDetail.sess.correct}/{studentDetail.sess.total}</span> },
                 { label: "ความแม่นยำ", value: <span className="text-blue-400">{studentDetail.sess.total > 0 ? Math.round(studentDetail.sess.correct / studentDetail.sess.total * 100) : 0}%</span> },
-                { label: "HP เหลือ", value: <span className={studentDetail.sess.hpLeft > 2 ? "text-green-400" : studentDetail.sess.hpLeft > 0 ? "text-yellow-400" : "text-red-400"}>{"♥".repeat(studentDetail.sess.hpLeft)}{"♡".repeat(5 - studentDetail.sess.hpLeft)}</span> },
+                { label: "HP เหลือ", value: <span className="flex justify-center"><Hearts hp={studentDetail.sess.hpLeft} /></span> },
               ].map(c => (
                 <div key={c.label} className="bg-slate-800 px-3 py-3 text-center">
                   <div className="text-sm">{c.value}</div>
@@ -330,10 +379,10 @@ function ResultsPageInner() {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`text-lg leading-none mt-0.5 shrink-0 ${
+                      <div className={`leading-none mt-0.5 shrink-0 ${
                         !att ? "text-slate-600" : att.isCorrect ? "text-green-400" : "text-red-400"
                       }`}>
-                        {!att ? "·" : att.isCorrect ? "✓" : "✗"}
+                        {!att ? <span className="text-lg">·</span> : att.isCorrect ? <IconCheck size={18} /> : <IconX size={18} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-slate-300 text-sm">
@@ -343,13 +392,13 @@ function ResultsPageInner() {
                         {att && (
                           <div className="mt-1.5 flex flex-wrap gap-2">
                             {att.isCorrect ? (
-                              <span className="text-xs bg-green-900/40 border border-green-700/50 text-green-300 px-2 py-0.5 rounded">
-                                ✓ ตอบ: {att.answer}
+                              <span className="inline-flex items-center gap-1 text-xs bg-green-900/40 border border-green-700/50 text-green-300 px-2 py-0.5 rounded">
+                                <IconCheck size={12} /> ตอบ: {att.answer}
                               </span>
                             ) : (
                               <>
-                                <span className="text-xs bg-red-900/40 border border-red-700/50 text-red-300 px-2 py-0.5 rounded">
-                                  ✗ ตอบ: {att.answer || "(หมดเวลา)"}
+                                <span className="inline-flex items-center gap-1 text-xs bg-red-900/40 border border-red-700/50 text-red-300 px-2 py-0.5 rounded">
+                                  <IconX size={12} /> ตอบ: {att.answer || "(หมดเวลา)"}
                                 </span>
                                 <span className="text-xs bg-green-900/30 border border-green-700/40 text-green-400 px-2 py-0.5 rounded">
                                   เฉลย: {(q.data as any).answer}
@@ -361,7 +410,7 @@ function ResultsPageInner() {
                         )}
                         {!att && <div className="text-slate-600 text-xs mt-1">ไม่มีข้อมูล</div>}
                         {q.data.hint && att && !att.isCorrect && (
-                          <div className="text-slate-500 text-xs mt-1">💡 {q.data.hint}</div>
+                          <div className="text-slate-500 text-xs mt-1 flex items-center gap-1"><IconLightbulb size={12} /> {q.data.hint}</div>
                         )}
                       </div>
                     </div>
