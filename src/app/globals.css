@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-thai: var(--font-thai);
+  --font-pixel: var(--font-pixel);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-thai), "Noto Sans Thai", sans-serif;
+  background: #1a1a2e;
+  color: #e2e8f0;
+}
+
+.font-pixel {
+  font-family: var(--font-pixel), "Press Start 2P", monospace;
+}
+
+.font-thai {
+  font-family: var(--font-thai), "Noto Sans Thai", sans-serif;
+}
+
+/* Pokemon-style HP bar colors */
+.hp-high { background: #48d020; }
+.hp-mid  { background: #f8c020; }
+.hp-low  { background: #f84018; }
+
+/* Battle animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(10px); }
+  75%       { transform: translateX(-5px); }
+}
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+@keyframes attack-forward {
+  0%, 100% { transform: translateX(0) scaleX(-1); }
+  40%       { transform: translateX(60px) scaleX(-1); }
+}
+@keyframes attack-backward {
+  0%, 100% { transform: translateX(0); }
+  40%       { transform: translateX(-60px); }
+}
+@keyframes die-fall {
+  to { transform: scaleY(0) translateY(20px); opacity: 0; }
+}
+
+.anim-float        { animation: float 2s ease-in-out infinite; }
+.anim-hero-attack  { animation: attack-forward .4s ease-in-out; }
+.anim-enemy-attack { animation: attack-backward .4s ease-in-out; }
+.anim-hit          { animation: shake .35s ease-in-out; }
+.anim-flash        { animation: flash .25s ease-in-out 2; }
+.anim-die          { animation: die-fall .8s ease-in forwards; }

@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  firstName String
+  lastName  String
+  nickname  String
+  studentId String   @unique
+  grade     Int
+  room      Int
+  number    Int
+  username  String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+
+  sessions  GameSession[]
+}
+
+model Category {
+  id    String  @id @default(cuid())
+  name  String
+  mode  String
+  order Int     @default(0)
+
+  stages Stage[]
+}
+
+model Stage {
+  id         String @id @default(cuid())
+  categoryId String
+  name       String
+  order      Int    @default(0)
+  enemyName  String @default("มังกรคณิต")
+  enemyEmoji String @default("🐉")
+
+  category  Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  questions Question[]
+  sessions  GameSession[]
+}
+
+model Question {
+  id      String @id @default(cuid())
+  stageId String
+  body    String
+  data    Json
+  order   Int    @default(0)
+
+  stage    Stage             @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  attempts QuestionAttempt[]
+}
+
+model GameSession {
+  id        String   @id @default(cuid())
+  userId    String
+  stageId   String
+  score     Int      @default(0)
+  correct   Int      @default(0)
+  total     Int      @default(0)
+  hpLeft    Int      @default(5)
+  passed    Boolean  @default(false)
+  timeSpent Int      @default(0)
+  playedAt  DateTime @default(now())
+
+  user     User              @relation(fields: [userId], references: [id])
+  stage    Stage             @relation(fields: [stageId], references: [id])
+  attempts QuestionAttempt[]
+}
+
+model QuestionAttempt {
+  id         String  @id @default(cuid())
+  sessionId  String
+  questionId String
+  answer     String
+  isCorrect  Boolean
+  timeSpent  Int
+
+  session  GameSession @relation(fields: [sessionId], references: [id])
+  question Question    @relation(fields: [questionId], references: [id])
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+}
