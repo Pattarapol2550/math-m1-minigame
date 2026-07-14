@@ -75,13 +75,13 @@ export default function StagesPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
-          <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconTreasureMap size={14} /> จัดการด่าน</span>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
+          <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-xs sm:text-sm whitespace-nowrap"><IconArrowLeft size={16} className="shrink-0" /> Dashboard</Link>
+          <span className="font-pixel text-yellow-400 text-[9px] sm:text-xs flex items-center gap-1.5 min-w-0 break-words leading-relaxed"><IconTreasureMap size={14} className="shrink-0" /> จัดการด่าน</span>
         </div>
         <button
           onClick={() => { setEditing({ ...EMPTY_STAGE }); setError(""); }}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded transition-colors"
+          className="bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded transition-colors whitespace-nowrap"
         >
           + สร้างด่านใหม่
         </button>

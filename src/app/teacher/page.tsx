@@ -89,33 +89,33 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
-        <div className="font-pixel text-yellow-400 text-xs flex items-center gap-2">
-          <IconSword size={16} /> Math Quest — ครู
+        <div className="font-pixel text-yellow-400 text-[9px] sm:text-xs flex items-center gap-2 min-w-0 break-words">
+          <IconSword size={16} className="shrink-0" /> Math Quest — ครู
         </div>
-        <div className="flex gap-3 items-center">
-          <Link href="/teacher/results" className="flex items-center gap-1.5 bg-green-700 hover:bg-green-600 text-white text-sm px-3 py-2 rounded-lg transition-colors">
-            <IconChart size={16} /> Overview
+        <div className="flex gap-2 sm:gap-3 items-center flex-wrap text-xs sm:text-sm">
+          <Link href="/teacher/results" className="flex items-center gap-1.5 bg-green-700 hover:bg-green-600 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap">
+            <IconChart size={16} className="shrink-0" /> Overview
           </Link>
-          <Link href="/teacher/stages" className="flex items-center gap-1.5 text-purple-400 text-sm hover:text-purple-300">
-            <IconTreasureMap size={16} /> จัดการด่าน
+          <Link href="/teacher/stages" className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 whitespace-nowrap">
+            <IconTreasureMap size={16} className="shrink-0" /> จัดการด่าน
           </Link>
-          <Link href="/teacher/questions" className="flex items-center gap-1.5 text-blue-400 text-sm hover:text-blue-300">
-            <IconEdit size={16} /> จัดการโจทย์
+          <Link href="/teacher/questions" className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 whitespace-nowrap">
+            <IconEdit size={16} className="shrink-0" /> จัดการโจทย์
           </Link>
-          <Link href="/teacher/import" className="flex items-center gap-1.5 text-teal-400 text-sm hover:text-teal-300">
-            <IconUsers size={16} /> นำเข้านักเรียน
+          <Link href="/teacher/import" className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 whitespace-nowrap">
+            <IconUsers size={16} className="shrink-0" /> นำเข้านักเรียน
           </Link>
-          <Link href="/teacher/feedback" className="flex items-center gap-1.5 text-pink-400 text-sm hover:text-pink-300">
-            <IconMessage size={16} /> Feedback
+          <Link href="/teacher/feedback" className="flex items-center gap-1.5 text-pink-400 hover:text-pink-300 whitespace-nowrap">
+            <IconMessage size={16} className="shrink-0" /> Feedback
             {newFeedbackCount > 0 && <span className="bg-red-600 text-white text-[10px] px-1.5 rounded-full">{newFeedbackCount}</span>}
           </Link>
           <a
             href="/api/teacher/export"
-            className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap"
           >
-            <IconDownload size={16} /> Export Excel
+            <IconDownload size={16} className="shrink-0" /> Export Excel
           </a>
-          <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-slate-300 text-sm hover:text-slate-300">ออก</button>
+          <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-slate-300 hover:text-slate-300 whitespace-nowrap">ออก</button>
         </div>
       </header>
 

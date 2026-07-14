@@ -94,11 +94,11 @@ export default function ImportPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3 flex-wrap">
-        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
-          <IconArrowLeft size={16} /> Dashboard
+        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-xs sm:text-sm whitespace-nowrap">
+          <IconArrowLeft size={16} className="shrink-0" /> Dashboard
         </Link>
-        <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5">
-          <IconUsers size={14} /> นำเข้านักเรียน
+        <span className="font-pixel text-yellow-400 text-[9px] sm:text-xs flex items-center gap-1.5 min-w-0 break-words leading-relaxed">
+          <IconUsers size={14} className="shrink-0" /> นำเข้านักเรียน
         </span>
       </header>
 

@@ -28,8 +28,8 @@ export default function AuditPage() {
         <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
           <IconArrowLeft size={16} /> Dashboard
         </Link>
-        <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5">
-          <IconKey size={14} /> ประวัติการรีเซ็ตรหัสผ่าน
+        <span className="font-pixel text-yellow-400 text-[9px] sm:text-xs flex items-center gap-1.5 min-w-0 break-words leading-relaxed">
+          <IconKey size={14} className="shrink-0" /> ประวัติการรีเซ็ตรหัสผ่าน
         </span>
       </header>
 

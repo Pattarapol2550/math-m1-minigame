@@ -61,9 +61,9 @@ function QuestionsPageInner() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3 flex-wrap">
-        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
-        <Link href="/teacher/stages" className="text-slate-300 hover:text-white text-sm">ด่าน</Link>
-        <span className="font-pixel text-yellow-400 text-xs">จัดการโจทย์</span>
+        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-xs sm:text-sm whitespace-nowrap"><IconArrowLeft size={16} className="shrink-0" /> Dashboard</Link>
+        <Link href="/teacher/stages" className="text-slate-300 hover:text-white text-xs sm:text-sm whitespace-nowrap">ด่าน</Link>
+        <span className="font-pixel text-yellow-400 text-[9px] sm:text-xs min-w-0 break-words leading-relaxed">จัดการโจทย์</span>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
