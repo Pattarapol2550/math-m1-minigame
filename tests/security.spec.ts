@@ -37,6 +37,18 @@ test.describe("API auth guards (unauthenticated)", () => {
     const res = await request.get("/api/teacher/password-logs");
     expect([401, 403]).toContain(res.status());
   });
+
+  test("student feedback endpoints require auth", async ({ request }) => {
+    const get = await request.get("/api/student/feedback");
+    expect(get.status()).toBe(401);
+    const post = await request.post("/api/student/feedback", { data: { category: "OTHER", message: "x" } });
+    expect(post.status()).toBe(401);
+  });
+
+  test("teacher feedback endpoint rejects non-teachers", async ({ request }) => {
+    const res = await request.get("/api/teacher/feedback");
+    expect([401, 403]).toContain(res.status());
+  });
 });
 
 test.describe("answer leakage", () => {

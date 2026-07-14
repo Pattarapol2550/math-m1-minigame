@@ -18,7 +18,7 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  color: "#94a3b8",
+  color: "#c3ccdb",
   fontSize: "clamp(11px,2.5vw,13px)",
   marginBottom: 6,
 };
@@ -90,7 +90,7 @@ export default function RegisterPage() {
           <h1 style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(14px,4vw,20px)", color: "#f5a623", marginBottom: 6 }}>
             Math Quest
           </h1>
-          <p style={{ color: "#64748b", fontSize: "clamp(12px,3vw,14px)" }}>ลงทะเบียนนักเรียน</p>
+          <p style={{ color: "#a3b0c2", fontSize: "clamp(12px,3vw,14px)" }}>ลงทะเบียนนักเรียน</p>
         </div>
 
         <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "clamp(20px,5vw,32px)", backdropFilter: "blur(12px)" }}>
@@ -183,7 +183,7 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 20 }}>
+        <p style={{ textAlign: "center", color: "#7c8aa0", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 20 }}>
           มีบัญชีแล้ว? <Link href="/login" style={{ color: "#60a5fa" }}>เข้าสู่ระบบ</Link>
         </p>
       </div>

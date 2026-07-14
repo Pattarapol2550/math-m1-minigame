@@ -14,7 +14,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <path d="M12 9v4" /><path d="M12 17h.01" />
         </svg>
         <h1 className="text-white text-lg font-medium mb-2">เกิดข้อผิดพลาด</h1>
-        <p className="text-slate-400 text-sm mb-6">ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง</p>
+        <p className="text-slate-300 text-sm mb-6">ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง</p>
         <div className="flex gap-2 justify-center">
           <button
             onClick={reset}

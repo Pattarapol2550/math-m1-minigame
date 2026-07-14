@@ -31,7 +31,7 @@ export default function LoginPage() {
           <h1 style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(14px,4vw,20px)", color: "#f5a623", marginBottom: 6 }}>
             Math Quest
           </h1>
-          <p style={{ color: "#64748b", fontSize: "clamp(12px,3vw,14px)" }}>เกมคณิตศาสตร์ผจญภัย</p>
+          <p style={{ color: "#a3b0c2", fontSize: "clamp(12px,3vw,14px)" }}>เกมคณิตศาสตร์ผจญภัย</p>
         </div>
 
         {/* Card */}
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit}>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#94a3b8", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>เลขประจำตัวนักเรียน</label>
+              <label style={{ display: "block", color: "#c3ccdb", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>เลขประจำตัวนักเรียน</label>
               <input
                 type="text"
                 value={username}
@@ -56,7 +56,7 @@ export default function LoginPage() {
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", color: "#94a3b8", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>รหัสผ่าน</label>
+              <label style={{ display: "block", color: "#c3ccdb", fontSize: "clamp(11px,2.5vw,13px)", marginBottom: 6 }}>รหัสผ่าน</label>
               <input
                 type="password"
                 value={password}
@@ -90,11 +90,11 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 8 }}>
+        <p style={{ textAlign: "center", color: "#7c8aa0", fontSize: "clamp(10px,2.2vw,12px)", marginTop: 8 }}>
           ยังไม่มีบัญชี? <Link href="/register" style={{ color: "#60a5fa" }}>ลงทะเบียน</Link>
         </p>
-        <p style={{ textAlign: "center", color: "#334155", fontSize: "clamp(9px,2vw,11px)", marginTop: 6 }}>
-          <Link href="/privacy" style={{ color: "#475569" }}>นโยบายความเป็นส่วนตัว</Link>
+        <p style={{ textAlign: "center", color: "#7c8aa0", fontSize: "clamp(9px,2vw,11px)", marginTop: 6 }}>
+          <Link href="/privacy" style={{ color: "#8a97ab" }}>นโยบายความเป็นส่วนตัว</Link>
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import {
   IconChart, IconMap, IconEdit, IconDownload, IconUsers,
-  IconGamepad, IconTarget, IconCheck, IconX, IconSword, IconSearch, IconKey,
+  IconGamepad, IconTarget, IconCheck, IconX, IconSword, IconSearch, IconKey, IconMessage,
 } from "@/components/Icon";
 
 const emptyFilters = { firstName: "", lastName: "", nickname: "", grade: "", studentId: "" };
@@ -13,6 +13,14 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState<any[]>([]);
   const [filters, setFilters] = useState({ ...emptyFilters });
   const [loading, setLoading] = useState(true);
+  const [newFeedbackCount, setNewFeedbackCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/teacher/feedback?status=NEW")
+      .then(r => r.json())
+      .then(d => setNewFeedbackCount(Array.isArray(d) ? d.length : 0))
+      .catch(() => {});
+  }, []);
   const [resetTarget, setResetTarget] = useState<{ id: string; name: string; studentId: string } | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [resetError, setResetError] = useState("");
@@ -97,13 +105,17 @@ export default function TeacherDashboard() {
           <Link href="/teacher/import" className="flex items-center gap-1.5 text-teal-400 text-sm hover:text-teal-300">
             <IconUsers size={16} /> นำเข้านักเรียน
           </Link>
+          <Link href="/teacher/feedback" className="flex items-center gap-1.5 text-pink-400 text-sm hover:text-pink-300">
+            <IconMessage size={16} /> Feedback
+            {newFeedbackCount > 0 && <span className="bg-red-600 text-white text-[10px] px-1.5 rounded-full">{newFeedbackCount}</span>}
+          </Link>
           <a
             href="/api/teacher/export"
             className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-2 rounded-lg transition-colors"
           >
             <IconDownload size={16} /> Export Excel
           </a>
-          <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-slate-400 text-sm hover:text-slate-300">ออก</button>
+          <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-slate-300 text-sm hover:text-slate-300">ออก</button>
         </div>
       </header>
 
@@ -118,14 +130,14 @@ export default function TeacherDashboard() {
             <div key={c.label} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
               <div className="text-yellow-400 mb-2">{c.icon}</div>
               <div className="font-pixel text-yellow-400 text-lg">{c.value}</div>
-              <div className="text-slate-400 text-xs mt-1">{c.label}</div>
+              <div className="text-slate-300 text-xs mt-1">{c.label}</div>
             </div>
           ))}
         </div>
 
         {/* Multi-field search */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-4">
-          <div className="text-slate-400 text-xs mb-3 flex items-center gap-1.5">
+          <div className="text-slate-300 text-xs mb-3 flex items-center gap-1.5">
             <IconSearch size={14} /> ค้นหานักเรียน — กรอกเฉพาะช่องที่ต้องการ (จะแสดงคนที่ตรงทุกช่องที่กรอก)
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -166,16 +178,16 @@ export default function TeacherDashboard() {
             <button onClick={fetchStudents} className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded transition-colors">
               <IconSearch size={15} /> ค้นหา
             </button>
-            <button onClick={resetFilters} className="text-slate-400 hover:text-slate-200 text-sm px-3 py-2">ล้างค่า</button>
-            <Link href="/teacher/audit" className="ml-auto flex items-center gap-1 text-slate-500 hover:text-slate-300 text-xs">
+            <button onClick={resetFilters} className="text-slate-300 hover:text-slate-200 text-sm px-3 py-2">ล้างค่า</button>
+            <Link href="/teacher/audit" className="ml-auto flex items-center gap-1 text-slate-300 hover:text-slate-300 text-xs">
               <IconKey size={13} /> ประวัติการรีเซ็ตรหัสผ่าน
             </Link>
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[720px]">
             <thead>
               <tr className="bg-slate-700 text-slate-300">
                 <th className="text-left px-4 py-3">ชื่อ</th>
@@ -191,10 +203,10 @@ export default function TeacherDashboard() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={9} className="text-center text-slate-400 py-8">กำลังโหลด...</td></tr>
+                <tr><td colSpan={9} className="text-center text-slate-300 py-8">กำลังโหลด...</td></tr>
               )}
               {!loading && students.length === 0 && (
-                <tr><td colSpan={9} className="text-center text-slate-400 py-8">ไม่พบนักเรียน</td></tr>
+                <tr><td colSpan={9} className="text-center text-slate-300 py-8">ไม่พบนักเรียน</td></tr>
               )}
               {students.map(s => {
                 const total = s.sessions.reduce((a: number, g: any) => a + g.total, 0);
@@ -204,15 +216,15 @@ export default function TeacherDashboard() {
                 return (
                   <tr key={s.id} className="border-t border-slate-700 hover:bg-slate-750 transition-colors">
                     <td className="px-4 py-3 text-white font-medium">{s.name}</td>
-                    <td className="px-4 py-3 text-slate-400">{s.nickname ?? "-"}</td>
-                    <td className="px-4 py-3 text-slate-400">{s.classroom ?? "-"}</td>
-                    <td className="px-4 py-3 text-slate-400">{s.studentId ?? "-"}</td>
+                    <td className="px-4 py-3 text-slate-300">{s.nickname ?? "-"}</td>
+                    <td className="px-4 py-3 text-slate-300">{s.classroom ?? "-"}</td>
+                    <td className="px-4 py-3 text-slate-300">{s.studentId ?? "-"}</td>
                     <td className="px-4 py-3 text-right text-slate-300">{s.sessions.length}</td>
                     <td className="px-4 py-3 text-right text-yellow-400 font-pixel text-xs">{score}</td>
                     <td className="px-4 py-3 text-right text-blue-400">{total > 0 ? Math.round(correct / total * 100) : 0}%</td>
                     <td className="px-4 py-3 text-right">
                       <span className="inline-flex items-center gap-1 text-green-400"><IconCheck size={14} />{passed}</span>
-                      <span className="text-slate-500 mx-1.5">/</span>
+                      <span className="text-slate-300 mx-1.5">/</span>
                       <span className="inline-flex items-center gap-1 text-red-400"><IconX size={14} />{s.sessions.length - passed}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -237,7 +249,7 @@ export default function TeacherDashboard() {
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm">
             <div className="px-5 py-4 border-b border-slate-700">
               <div className="text-white font-medium">รีเซ็ตรหัสผ่าน</div>
-              <div className="text-slate-400 text-xs mt-1">{resetTarget.name} · เลขประจำตัว {resetTarget.studentId}</div>
+              <div className="text-slate-300 text-xs mt-1">{resetTarget.name} · เลขประจำตัว {resetTarget.studentId}</div>
             </div>
             <div className="p-5">
               {resetDone ? (
@@ -247,7 +259,7 @@ export default function TeacherDashboard() {
                 </div>
               ) : (
                 <>
-                  <label className="block text-slate-400 text-xs mb-1.5">รหัสผ่านใหม่</label>
+                  <label className="block text-slate-300 text-xs mb-1.5">รหัสผ่านใหม่</label>
                   <input
                     type="text"
                     value={newPassword}

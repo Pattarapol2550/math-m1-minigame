@@ -76,7 +76,7 @@ export default function StagesPage() {
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
+          <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
           <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconMap size={14} /> จัดการด่าน</span>
         </div>
         <button
@@ -93,12 +93,12 @@ export default function StagesPage() {
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
             <div className="text-yellow-400 mb-2"><IconMap size={26} /></div>
             <div className="font-pixel text-yellow-400 text-lg">{totalStages}</div>
-            <div className="text-slate-400 text-xs mt-1">ด่านทั้งหมด</div>
+            <div className="text-slate-300 text-xs mt-1">ด่านทั้งหมด</div>
           </div>
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
             <div className="text-yellow-400 mb-2"><IconBook size={26} /></div>
             <div className="font-pixel text-yellow-400 text-lg">{categories.length}</div>
-            <div className="text-slate-400 text-xs mt-1">หมวดหมู่</div>
+            <div className="text-slate-300 text-xs mt-1">หมวดหมู่</div>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export default function StagesPage() {
             <div key={cat.id}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-slate-300 font-medium text-sm">{cat.name}</span>
-                <span className="bg-slate-700 text-slate-400 text-xs px-2 py-0.5 rounded">{cat.mode}</span>
+                <span className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded">{cat.mode}</span>
                 <button
                   onClick={() => { setEditing({ ...EMPTY_STAGE, categoryId: cat.id }); setError(""); }}
                   className="ml-auto text-blue-400 hover:text-blue-300 text-xs"
@@ -119,16 +119,16 @@ export default function StagesPage() {
 
               <div className="space-y-2">
                 {cat.stages.length === 0 && (
-                  <p className="text-slate-600 text-sm text-center py-4 border border-dashed border-slate-700 rounded-xl">
+                  <p className="text-slate-300 text-sm text-center py-4 border border-dashed border-slate-700 rounded-xl">
                     ยังไม่มีด่าน
                   </p>
                 )}
                 {cat.stages.map((stage, i) => (
                   <div key={stage.id} className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <span className="text-slate-500 text-xs w-6 text-center">{i + 1}</span>
+                    <span className="text-slate-300 text-xs w-6 text-center">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-white text-sm font-medium truncate">{stage.name}</div>
-                      <div className="text-slate-400 text-xs mt-0.5">
+                      <div className="text-slate-300 text-xs mt-0.5">
                         ศัตรู: {stage.enemyName} · {stage._count.questions} โจทย์
                       </div>
                     </div>
@@ -171,7 +171,7 @@ export default function StagesPage() {
             <div className="space-y-4">
               {/* Category */}
               <div>
-                <label className="text-slate-400 text-xs block mb-1">หมวดหมู่ *</label>
+                <label className="text-slate-300 text-xs block mb-1">หมวดหมู่ *</label>
                 <select
                   value={editing.categoryId}
                   onChange={e => setEditing({ ...editing, categoryId: e.target.value })}
@@ -186,7 +186,7 @@ export default function StagesPage() {
 
               {/* Stage name */}
               <div>
-                <label className="text-slate-400 text-xs block mb-1">ชื่อด่าน *</label>
+                <label className="text-slate-300 text-xs block mb-1">ชื่อด่าน *</label>
                 <input
                   type="text"
                   value={editing.name}
@@ -198,7 +198,7 @@ export default function StagesPage() {
 
               {/* Enemy name */}
               <div>
-                <label className="text-slate-400 text-xs block mb-1">ชื่อศัตรู</label>
+                <label className="text-slate-300 text-xs block mb-1">ชื่อศัตรู</label>
                 <div className="flex gap-2">
                   <select
                     value={ENEMY_OPTIONS.includes(editing.enemyName) ? editing.enemyName : "__custom"}
@@ -224,7 +224,7 @@ export default function StagesPage() {
 
               {/* Order */}
               <div>
-                <label className="text-slate-400 text-xs block mb-1">ลำดับ (น้อย = แสดงก่อน)</label>
+                <label className="text-slate-300 text-xs block mb-1">ลำดับ (น้อย = แสดงก่อน)</label>
                 <input
                   type="number"
                   value={editing.order}

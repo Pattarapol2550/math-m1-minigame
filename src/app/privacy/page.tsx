@@ -8,7 +8,7 @@ export default function PrivacyPage() {
       <main className="max-w-2xl mx-auto px-5 py-10">
         <h1 className="text-yellow-400 font-pixel text-base mb-6">นโยบายความเป็นส่วนตัว</h1>
 
-        <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+        <p className="text-slate-300 text-sm mb-6 leading-relaxed">
           เกม Math Quest จัดทำขึ้นเพื่อการเรียนการสอนคณิตศาสตร์ภายในโรงเรียน
           เอกสารนี้อธิบายว่าเราเก็บข้อมูลอะไรและใช้เพื่ออะไร ตามหลัก พ.ร.บ.
           คุ้มครองข้อมูลส่วนบุคคล (PDPA)
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
         ].map(s => (
           <section key={s.h} className="mb-5">
             <h2 className="text-slate-200 text-sm font-medium mb-1.5">{s.h}</h2>
-            <p className="text-slate-400 text-sm leading-relaxed">{s.b}</p>
+            <p className="text-slate-300 text-sm leading-relaxed">{s.b}</p>
           </section>
         ))}
 

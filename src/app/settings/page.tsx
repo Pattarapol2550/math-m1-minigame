@@ -50,7 +50,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)" }}>
       <header className="bg-slate-900/80 border-b border-slate-700 px-4 py-3 flex items-center gap-3">
-        <Link href="/map" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+        <Link href="/map" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
           <IconArrowLeft size={16} /> แผนที่
         </Link>
         <span className="font-pixel text-yellow-400 text-xs">ตั้งค่า</span>
@@ -63,7 +63,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <div className="text-white text-sm font-medium">{session?.user?.name}</div>
-            <div className="text-slate-500 text-xs">บัญชีของฉัน</div>
+            <div className="text-slate-300 text-xs">บัญชีของฉัน</div>
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export default function SettingsPage() {
 
           <form onSubmit={onSubmit} className="space-y-3">
             <div>
-              <label className="block text-slate-400 text-xs mb-1.5">รหัสผ่านปัจจุบัน</label>
+              <label className="block text-slate-300 text-xs mb-1.5">รหัสผ่านปัจจุบัน</label>
               <input
                 type="password"
                 value={currentPassword}
@@ -85,7 +85,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-slate-400 text-xs mb-1.5">รหัสผ่านใหม่</label>
+              <label className="block text-slate-300 text-xs mb-1.5">รหัสผ่านใหม่</label>
               <input
                 type="password"
                 value={newPassword}
@@ -95,7 +95,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-slate-400 text-xs mb-1.5">ยืนยันรหัสผ่านใหม่</label>
+              <label className="block text-slate-300 text-xs mb-1.5">ยืนยันรหัสผ่านใหม่</label>
               <input
                 type="password"
                 value={confirmPassword}

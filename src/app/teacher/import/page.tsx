@@ -94,7 +94,7 @@ export default function ImportPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
-        <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
           <IconArrowLeft size={16} /> Dashboard
         </Link>
         <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5">
@@ -105,7 +105,7 @@ export default function ImportPage() {
       <main className="max-w-4xl mx-auto px-4 py-6">
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 mb-4">
           <h2 className="text-white text-sm font-medium mb-2">อัปโหลดไฟล์ CSV</h2>
-          <p className="text-slate-400 text-xs mb-3 leading-relaxed">
+          <p className="text-slate-300 text-xs mb-3 leading-relaxed">
             หัวตาราง (แถวแรก) ต้องมีคอลัมน์: <code className="text-blue-300">firstName, lastName, nickname, grade, room, number, studentId, password</code>
             <br />ถ้าเว้น <code className="text-blue-300">password</code> ว่างไว้ ระบบจะตั้งรหัสผ่านเริ่มต้น = เลขประจำตัวนักเรียน
           </p>
@@ -142,7 +142,7 @@ export default function ImportPage() {
             <div className="overflow-x-auto max-h-96">
               <table className="w-full text-xs">
                 <thead className="bg-slate-700/50 sticky top-0">
-                  <tr className="text-slate-400">
+                  <tr className="text-slate-300">
                     <th className="text-left px-3 py-2">ชื่อ</th>
                     <th className="text-left px-3 py-2">นามสกุล</th>
                     <th className="text-left px-3 py-2">ชื่อเล่น</th>
@@ -163,7 +163,7 @@ export default function ImportPage() {
                       <td className="px-3 py-1.5">{r.room}</td>
                       <td className="px-3 py-1.5">{r.number}</td>
                       <td className="px-3 py-1.5">{r.studentId}</td>
-                      <td className="px-3 py-1.5 text-slate-500">{r.password || "(= เลขประจำตัว)"}</td>
+                      <td className="px-3 py-1.5 text-slate-300">{r.password || "(= เลขประจำตัว)"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -185,8 +185,8 @@ export default function ImportPage() {
                 </div>
                 <div className="max-h-64 overflow-y-auto text-xs space-y-1">
                   {result.errors.map((e, i) => (
-                    <div key={i} className="text-slate-400">
-                      {e.row > 0 && <span className="text-slate-500">แถว {e.row} · </span>}
+                    <div key={i} className="text-slate-300">
+                      {e.row > 0 && <span className="text-slate-300">แถว {e.row} · </span>}
                       <span className="text-slate-300">{e.studentId || "-"}</span> — {e.reason}
                     </div>
                   ))}
@@ -197,7 +197,7 @@ export default function ImportPage() {
               <Link href="/teacher" className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">
                 กลับหน้าหลัก
               </Link>
-              <button onClick={() => { setRows([]); setResult(null); }} className="text-slate-400 hover:text-slate-200 text-sm px-3 py-2">
+              <button onClick={() => { setRows([]); setResult(null); }} className="text-slate-300 hover:text-slate-200 text-sm px-3 py-2">
                 นำเข้าไฟล์ใหม่
               </button>
             </div>

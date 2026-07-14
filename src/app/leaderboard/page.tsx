@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)" }}>
       <header className="bg-slate-900/80 border-b border-slate-700 px-4 py-3 flex items-center gap-3">
-        <Link href="/map" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+        <Link href="/map" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
           <IconArrowLeft size={16} /> แผนที่
         </Link>
         <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5">
@@ -44,22 +44,22 @@ export default function LeaderboardPage() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setScope("class")}
-            className={`flex-1 py-2 rounded-lg text-sm font-pixel transition-colors ${scope === "class" ? "bg-yellow-500/15 border-2 border-yellow-500 text-yellow-400" : "bg-white/5 border-2 border-white/10 text-slate-400"}`}
+            className={`flex-1 py-2 rounded-lg text-sm font-pixel transition-colors ${scope === "class" ? "bg-yellow-500/15 border-2 border-yellow-500 text-yellow-400" : "bg-white/5 border-2 border-white/10 text-slate-300"}`}
           >
             ห้องของฉัน
           </button>
           <button
             onClick={() => setScope("all")}
-            className={`flex-1 py-2 rounded-lg text-sm font-pixel transition-colors ${scope === "all" ? "bg-yellow-500/15 border-2 border-yellow-500 text-yellow-400" : "bg-white/5 border-2 border-white/10 text-slate-400"}`}
+            className={`flex-1 py-2 rounded-lg text-sm font-pixel transition-colors ${scope === "all" ? "bg-yellow-500/15 border-2 border-yellow-500 text-yellow-400" : "bg-white/5 border-2 border-white/10 text-slate-300"}`}
           >
             ทั้งโรงเรียน
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center text-slate-400 py-12 font-pixel text-xs">กำลังโหลด...</div>
+          <div className="text-center text-slate-300 py-12 font-pixel text-xs">กำลังโหลด...</div>
         ) : !data || data.leaderboard.length === 0 ? (
-          <div className="text-center text-slate-500 py-12 text-sm">ยังไม่มีข้อมูลคะแนน</div>
+          <div className="text-center text-slate-300 py-12 text-sm">ยังไม่มีข้อมูลคะแนน</div>
         ) : (
           <div className="space-y-2">
             {data.leaderboard.map(e => (
@@ -74,7 +74,7 @@ export default function LeaderboardPage() {
                   <div className="text-white text-sm font-medium truncate">
                     {e.nickname} {e.isMe && <span className="text-blue-300 text-xs">(คุณ)</span>}
                   </div>
-                  <div className="text-slate-500 text-xs">{e.classroom} · ผ่าน {e.stagesCleared} ด่าน</div>
+                  <div className="text-slate-300 text-xs">{e.classroom} · ผ่าน {e.stagesCleared} ด่าน</div>
                 </div>
                 <div className="flex items-center gap-1 text-yellow-400 font-pixel text-sm">
                   <IconStar size={14} /> {e.totalScore}

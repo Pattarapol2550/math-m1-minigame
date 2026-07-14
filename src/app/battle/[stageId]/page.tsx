@@ -214,7 +214,7 @@ export default function BattlePage() {
     <div style={{ minHeight: "100svh", display: "flex", flexDirection: "column", background: "#1a1a2e", maxWidth: 560, margin: "0 auto", position: "relative" }}>
 
       {/* ── BATTLE SCENE ── */}
-      <div style={{ position: "relative", flexShrink: 0, height: "clamp(180px, 38vw, 260px)", overflow: "hidden", background: "linear-gradient(180deg, #5bb8f5 0%, #78c8f8 52%, #88d048 52%, #68b030 100%)" }}>
+      <div style={{ position: "relative", flexShrink: 0, height: "clamp(110px, min(38vw, 34vh), 260px)", overflow: "hidden", background: "linear-gradient(180deg, #5bb8f5 0%, #78c8f8 52%, #88d048 52%, #68b030 100%)" }}>
 
         {/* Clouds */}
         <div style={{ position: "absolute", top: 10, left: "10%", width: 60, height: 20, background: "rgba(255,255,255,0.7)", borderRadius: 20 }} />

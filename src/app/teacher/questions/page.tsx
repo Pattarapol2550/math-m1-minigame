@@ -61,8 +61,8 @@ function QuestionsPageInner() {
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
-        <Link href="/teacher" className="flex items-center gap-1 text-slate-400 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
-        <Link href="/teacher/stages" className="text-slate-400 hover:text-white text-sm">ด่าน</Link>
+        <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
+        <Link href="/teacher/stages" className="text-slate-300 hover:text-white text-sm">ด่าน</Link>
         <span className="font-pixel text-yellow-400 text-xs">จัดการโจทย์</span>
       </header>
 
@@ -99,16 +99,16 @@ function QuestionsPageInner() {
             <div key={q.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
-                  <span className="text-slate-500 text-xs">ข้อ {i + 1} — </span>
+                  <span className="text-slate-300 text-xs">ข้อ {i + 1} — </span>
                   <span className="text-white text-sm font-medium">{q.body}</span>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {q.data.choices.map(c => (
-                      <span key={c} className={`text-xs px-2 py-1 rounded border ${c === q.data.answer ? "border-green-500 text-green-400 bg-green-900/30" : "border-slate-600 text-slate-400"}`}>
+                      <span key={c} className={`text-xs px-2 py-1 rounded border ${c === q.data.answer ? "border-green-500 text-green-400 bg-green-900/30" : "border-slate-600 text-slate-300"}`}>
                         {c}
                       </span>
                     ))}
                   </div>
-                  {q.data.hint && <p className="text-slate-500 text-xs mt-1 flex items-center gap-1"><IconLightbulb size={12} /> {q.data.hint}</p>}
+                  {q.data.hint && <p className="text-slate-300 text-xs mt-1 flex items-center gap-1"><IconLightbulb size={12} /> {q.data.hint}</p>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={() => setEditing({ ...q })} className="text-blue-400 hover:text-blue-300 text-xs">แก้ไข</button>
@@ -118,7 +118,7 @@ function QuestionsPageInner() {
             </div>
           ))}
           {selectedStage && questions.length === 0 && (
-            <p className="text-slate-500 text-sm text-center py-8">ยังไม่มีโจทย์ในด่านนี้</p>
+            <p className="text-slate-300 text-sm text-center py-8">ยังไม่มีโจทย์ในด่านนี้</p>
           )}
         </div>
       </main>
@@ -130,7 +130,7 @@ function QuestionsPageInner() {
             <h3 className="font-pixel text-yellow-400 text-xs mb-4">{editing.id ? "แก้ไขโจทย์" : "เพิ่มโจทย์ใหม่"}</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-slate-400 text-xs block mb-1">โจทย์</label>
+                <label className="text-slate-300 text-xs block mb-1">โจทย์</label>
                 <input
                   type="text"
                   value={editing.body}
@@ -140,7 +140,7 @@ function QuestionsPageInner() {
                 />
               </div>
               <div>
-                <label className="text-slate-400 text-xs block mb-1">ตัวเลือก (4 ข้อ)</label>
+                <label className="text-slate-300 text-xs block mb-1">ตัวเลือก (4 ข้อ)</label>
                 <div className="grid grid-cols-2 gap-2">
                   {editing.data.choices.map((c: string, i: number) => (
                     <input
@@ -159,7 +159,7 @@ function QuestionsPageInner() {
                 </div>
               </div>
               <div>
-                <label className="text-slate-400 text-xs block mb-1">คำตอบที่ถูก</label>
+                <label className="text-slate-300 text-xs block mb-1">คำตอบที่ถูก</label>
                 <select
                   value={editing.data.answer}
                   onChange={e => setEditing({ ...editing, data: { ...editing.data, answer: e.target.value } })}
@@ -172,7 +172,7 @@ function QuestionsPageInner() {
                 </select>
               </div>
               <div>
-                <label className="text-slate-400 text-xs block mb-1">คำใบ้ (ไม่บังคับ)</label>
+                <label className="text-slate-300 text-xs block mb-1">คำใบ้ (ไม่บังคับ)</label>
                 <input
                   type="text"
                   value={editing.data.hint ?? ""}
@@ -197,7 +197,7 @@ function QuestionsPageInner() {
 
 export default function QuestionsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">กำลังโหลด...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">กำลังโหลด...</div>}>
       <QuestionsPageInner />
     </Suspense>
   );

@@ -22,6 +22,7 @@ model User {
   createdAt DateTime @default(now())
 
   sessions  GameSession[]
+  feedback  Feedback[]
 
   @@index([grade, room])
   @@index([role])
@@ -71,6 +72,7 @@ model Stage {
   category  Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   questions Question[]
   sessions  GameSession[]
+  feedback  Feedback[]
 
   @@index([categoryId])
 }
@@ -122,6 +124,38 @@ model QuestionAttempt {
 
   @@index([sessionId])
   @@index([questionId])
+}
+
+// Student feedback to teachers — bug reports, suggestions, questions about content.
+model Feedback {
+  id         String         @id @default(cuid())
+  userId     String
+  category   FeedbackCategory
+  stageId    String?
+  message    String
+  rating     Int?           // 1-5, optional "how do you feel" rating
+  status     FeedbackStatus @default(NEW)
+  createdAt  DateTime       @default(now())
+
+  user  User   @relation(fields: [userId], references: [id])
+  stage Stage? @relation(fields: [stageId], references: [id])
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+enum FeedbackCategory {
+  BUG
+  SUGGESTION
+  QUESTION
+  OTHER
+}
+
+enum FeedbackStatus {
+  NEW
+  SEEN
+  RESOLVED
 }
 
 enum Role {
