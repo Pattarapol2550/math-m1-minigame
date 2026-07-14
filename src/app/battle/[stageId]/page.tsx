@@ -123,6 +123,14 @@ const SCENE_THEMES: Record<string, SceneTheme> = {
   },
 };
 
+// Shown only while stageInfo hasn't loaded yet — no monster/place implied.
+const NEUTRAL_THEME: SceneTheme = {
+  sky: "linear-gradient(180deg, #23283a 0%, #2c3346 100%)",
+  ground: "linear-gradient(180deg, #23283a 0%, #181c28 100%)",
+  groundLine: "#3a4258",
+  Decor: () => <></>,
+};
+
 // Wrapper forces a full remount whenever the stage changes. Next.js reuses the
 // same component instance for client-side navigations within /battle/[stageId],
 // so without this the old stage's sprite/background/state would flash on screen
@@ -316,7 +324,10 @@ function BattlePageInner() {
   const hpColor = hpPct > 60 ? "#48d020" : hpPct > 25 ? "#f8c020" : "#f84018";
   const enemyHpColor = enemyHpPct > 60 ? "#48d020" : enemyHpPct > 25 ? "#f8c020" : "#f84018";
 
-  const theme = SCENE_THEMES[resolveType(stageInfo?.enemyName ?? "")] ?? SCENE_THEMES.lizard;
+  // Don't resolve a theme/sprite until stageInfo actually loads — otherwise every
+  // stage would briefly flash the "lizard" fallback (resolveType("") === "lizard")
+  // before the real monster/background for that stage appears.
+  const theme = stageInfo ? (SCENE_THEMES[resolveType(stageInfo.enemyName)] ?? SCENE_THEMES.lizard) : NEUTRAL_THEME;
 
   return (
     <div style={{ minHeight: "100svh", display: "flex", flexDirection: "column", background: "#1a1a2e", maxWidth: 560, margin: "0 auto", position: "relative" }}>
@@ -331,12 +342,16 @@ function BattlePageInner() {
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "48%", background: theme.ground }} />
         <div style={{ position: "absolute", bottom: "48%", left: 0, right: 0, height: 3, background: theme.groundLine }} />
 
-        {/* Enemy platform + sprite */}
-        <div style={{ position: "absolute", bottom: "47%", left: "62%", transform: "translateX(-50%)", width: "18%", height: 10, background: "rgba(0,0,0,0.18)", borderRadius: "50%" }} />
-        <div className={enemyAnim} onAnimationEnd={() => setEnemyAnim("")}
-          style={{ position: "absolute", bottom: "49%", left: "62%", transform: "translateX(-50%)", filter: phase === "dead" ? "grayscale(1)" : "none" }}>
-          <EnemySprite type={stageInfo?.enemyName ?? ""} size={64} style={{ width: "clamp(48px,13vw,72px)", height: "clamp(48px,13vw,72px)" }} />
-        </div>
+        {/* Enemy platform + sprite — only once we know which monster this stage is */}
+        {stageInfo && (
+          <>
+            <div style={{ position: "absolute", bottom: "47%", left: "62%", transform: "translateX(-50%)", width: "18%", height: 10, background: "rgba(0,0,0,0.18)", borderRadius: "50%" }} />
+            <div className={enemyAnim} onAnimationEnd={() => setEnemyAnim("")}
+              style={{ position: "absolute", bottom: "49%", left: "62%", transform: "translateX(-50%)", filter: phase === "dead" ? "grayscale(1)" : "none" }}>
+              <EnemySprite type={stageInfo.enemyName} size={64} style={{ width: "clamp(48px,13vw,72px)", height: "clamp(48px,13vw,72px)" }} />
+            </div>
+          </>
+        )}
 
         {/* Hero platform + sprite */}
         <div style={{ position: "absolute", bottom: "22%", left: "24%", transform: "translateX(-50%)", width: "16%", height: 8, background: "rgba(0,0,0,0.15)", borderRadius: "50%" }} />
