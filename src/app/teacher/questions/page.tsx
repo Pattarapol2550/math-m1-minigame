@@ -60,7 +60,7 @@ function QuestionsPageInner() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3">
+      <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center gap-3 flex-wrap">
         <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
         <Link href="/teacher/stages" className="text-slate-300 hover:text-white text-sm">ด่าน</Link>
         <span className="font-pixel text-yellow-400 text-xs">จัดการโจทย์</span>

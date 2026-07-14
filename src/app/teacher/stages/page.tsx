@@ -74,7 +74,7 @@ export default function StagesPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+      <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
           <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconTreasureMap size={14} /> จัดการด่าน</span>
