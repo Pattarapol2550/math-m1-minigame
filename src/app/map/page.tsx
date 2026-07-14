@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import EnemySprite from "@/components/sprites/EnemySprite";
+import EnemySprite, { resolveType } from "@/components/sprites/EnemySprite";
 import {
   IconSword, IconUser, IconChart, IconTreasureMap, IconPlay, IconSettings, IconCrown, IconMessage,
-  IconTent, IconTree, IconMountain, IconCastle, IconFlame, IconZap, IconGem,
+  IconFlame, IconTree, IconSkull, IconGem,
 } from "@/components/Icon";
 
 interface Stage {
@@ -24,7 +24,17 @@ interface Category {
   stages: Stage[];
 }
 
-const STAGE_ICONS = [IconTent, IconTree, IconMountain, IconCastle, IconFlame, IconZap, IconGem, IconCrown];
+// Icon + accent color per monster type, matching the battle-scene themes —
+// so a stage's card actually hints at what's waiting inside instead of
+// cycling through unrelated icons in one flat color.
+const STAGE_ICON_THEME: Record<string, { Icon: typeof IconFlame; color: string }> = {
+  dragon: { Icon: IconFlame, color: "#ff7a45" },
+  goblin: { Icon: IconTree, color: "#4ade80" },
+  zombie: { Icon: IconSkull, color: "#a3e635" },
+  skeleton: { Icon: IconCrown, color: "#fbbf24" },
+  lizard: { Icon: IconGem, color: "#22d3ee" },
+};
+
 const BG = "linear-gradient(160deg, #0f0c29 0%, #1a1a4e 40%, #24243e 100%)";
 
 export default function MapPage() {
@@ -92,24 +102,33 @@ export default function MapPage() {
           <div style={{ textAlign: "center", color: "#a3b0c2", padding: 48, fontSize: 14 }}>ยังไม่มีเนื้อหา</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {cat.stages.map((stage, idx) => (
+            {cat.stages.map((stage, idx) => {
+              const theme = STAGE_ICON_THEME[resolveType(stage.enemyName)] ?? STAGE_ICON_THEME.lizard;
+              return (
               <button key={stage.id} onClick={() => router.push(`/battle/${stage.id}`)}
+                aria-label={`ด่าน ${idx + 1}: ${stage.name}`}
                 style={{
                   width: "100%", background: "rgba(255,255,255,0.05)", border: "1.5px solid rgba(255,255,255,0.1)",
+                  borderLeft: `3px solid ${theme.color}`,
                   borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14,
-                  cursor: "pointer", textAlign: "left", transition: "all 0.18s",
+                  cursor: "pointer", textAlign: "left", transition: "all 0.18s", position: "relative",
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(96,165,250,0.12)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(96,165,250,0.4)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = `${theme.color}1f`; (e.currentTarget as HTMLButtonElement).style.borderColor = `${theme.color}80`; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
               >
                 {/* Stage icon */}
-                <div style={{ width: "clamp(44px,10vw,56px)", height: "clamp(44px,10vw,56px)", background: "rgba(255,255,255,0.07)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "#f5a623", flexShrink: 0 }}>
-                  {(() => { const StageIcon = STAGE_ICONS[idx] ?? IconSword; return <StageIcon size={28} />; })()}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <div style={{ width: "clamp(44px,10vw,56px)", height: "clamp(44px,10vw,56px)", background: `${theme.color}22`, border: `1.5px solid ${theme.color}55`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: theme.color }}>
+                    <theme.Icon size={26} />
+                  </div>
+                  <div style={{ position: "absolute", top: -6, left: -6, width: 20, height: 20, borderRadius: "50%", background: "#1a1a2e", border: `1.5px solid ${theme.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-pixel), monospace", fontSize: 9, color: theme.color }}>
+                    {idx + 1}
+                  </div>
                 </div>
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(9px,2.2vw,12px)", color: "#e2e8f0", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    ด่าน {idx + 1}: {stage.name}
+                    {stage.name}
                   </div>
                   <div style={{ fontSize: "clamp(11px,2.5vw,13px)", color: "#c3ccdb", display: "flex", alignItems: "center", gap: 6 }}>
                     <EnemySprite type={stage.enemyName} size={20} style={{ flexShrink: 0 }} /> {stage.enemyName}
@@ -118,9 +137,10 @@ export default function MapPage() {
                     {stage._count.questions} คำถาม
                   </div>
                 </div>
-                <div style={{ color: "#60a5fa", flexShrink: 0, display: "flex" }}><IconPlay size={18} /></div>
+                <div style={{ color: theme.color, flexShrink: 0, display: "flex" }}><IconPlay size={18} /></div>
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

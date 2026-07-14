@@ -14,7 +14,7 @@ test.describe("game flow", () => {
     await page.goto("/map");
     await expect(page.getByText("เลือกด่าน")).toBeVisible();
 
-    const firstStage = page.locator("button", { hasText: "ด่าน 1" }).first();
+    const firstStage = page.getByRole("button", { name: /^ด่าน 1:/ });
     await expect(firstStage).toBeVisible({ timeout: 10_000 });
     await firstStage.click();
 
