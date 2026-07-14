@@ -28,6 +28,32 @@ export function IconMap(p: IconProps) {
   );
 }
 
+// Treasure map — scroll with a red ring, red X, and a dotted path between them.
+export function IconTreasureMap({ size = 24, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" className={className} style={style}>
+      {/* scroll rolls */}
+      <rect x="4" y="10" width="10" height="80" rx="5" fill="#c9a876" stroke="#8a6b3d" strokeWidth="2" />
+      <rect x="86" y="10" width="10" height="80" rx="5" fill="#c9a876" stroke="#8a6b3d" strokeWidth="2" />
+      <circle cx="9" cy="16" r="2.6" fill="#8a6b3d" />
+      <circle cx="9" cy="84" r="2.6" fill="#8a6b3d" />
+      <circle cx="91" cy="16" r="2.6" fill="#8a6b3d" />
+      <circle cx="91" cy="84" r="2.6" fill="#8a6b3d" />
+      {/* parchment body */}
+      <path
+        d="M13 12 h74 v12 l-4 6 4 6 -3 7 3 7 -4 6 4 6 -3 7 3 7 -4 6 4 6 v6 H13 v-6 l4-6-4-6 3-7-3-7 4-6-4-6 3-7-3-7 4-6-4-6 Z"
+        fill="#e8d4a8" stroke="#b89464" strokeWidth="1.5"
+      />
+      {/* dotted path */}
+      <path d="M32 34 C 40 46, 44 52, 50 58 C 56 64, 60 68, 66 62" fill="none" stroke="#8a6b3d" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="0.5 8" />
+      {/* red ring (O) */}
+      <circle cx="30" cy="30" r="8" fill="none" stroke="#dc3b28" strokeWidth="6" />
+      {/* red X */}
+      <path d="M62 46 L74 58 M74 46 L62 58" stroke="#dc3b28" strokeWidth="6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconEdit(p: IconProps) {
   return (
     <svg {...base(p)}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></svg>

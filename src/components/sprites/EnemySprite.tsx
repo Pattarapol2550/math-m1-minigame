@@ -203,7 +203,7 @@ const ENEMY_MAP: Record<string, React.FC<{S:number}>> = {
 };
 
 // Map stage enemy names/emojis to sprite keys
-function resolveType(type: string): string {
+export function resolveType(type: string): string {
   const t = type.toLowerCase();
   if (t.includes("dragon") || t.includes("มังกร")) return "dragon";
   if (t.includes("goblin") || t.includes("โกบลิน") || t.includes("ปีศาจ")) return "goblin";

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import {
-  IconChart, IconMap, IconEdit, IconDownload, IconUsers,
+  IconChart, IconTreasureMap, IconEdit, IconDownload, IconUsers,
   IconGamepad, IconTarget, IconCheck, IconX, IconSword, IconSearch, IconKey, IconMessage,
 } from "@/components/Icon";
 
@@ -97,7 +97,7 @@ export default function TeacherDashboard() {
             <IconChart size={16} /> Overview
           </Link>
           <Link href="/teacher/stages" className="flex items-center gap-1.5 text-purple-400 text-sm hover:text-purple-300">
-            <IconMap size={16} /> จัดการด่าน
+            <IconTreasureMap size={16} /> จัดการด่าน
           </Link>
           <Link href="/teacher/questions" className="flex items-center gap-1.5 text-blue-400 text-sm hover:text-blue-300">
             <IconEdit size={16} /> จัดการโจทย์

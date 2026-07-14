@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import HeroSprite from "@/components/sprites/HeroSprite";
-import EnemySprite from "@/components/sprites/EnemySprite";
+import EnemySprite, { resolveType } from "@/components/sprites/EnemySprite";
 import {
   IconHeart, IconHeartOff, IconStar, IconCheck, IconX, IconClock,
   IconTrophy, IconSkull, IconArrowLeft, IconArrowRight, IconPlay,
@@ -39,6 +39,89 @@ async function gradeAnswer(questionId: string, answer: string): Promise<GradeRes
 
 type Phase = "loading" | "intro" | "question" | "feedback" | "win" | "dead";
 type FeedbackType = "correct" | "wrong" | "timeout";
+
+// Battle-scene backdrop themed per enemy type, so each stage feels like its own place
+// instead of the same plain sky+grass for every monster.
+interface SceneTheme {
+  sky: string;
+  ground: string;
+  groundLine: string;
+  Decor: () => React.ReactElement;
+}
+
+const SCENE_THEMES: Record<string, SceneTheme> = {
+  // Dragon → volcano at dusk
+  dragon: {
+    sky: "linear-gradient(180deg, #2b0f10 0%, #5c1a12 45%, #8a2e12 52%)",
+    ground: "linear-gradient(180deg, #4a2a1e 0%, #2a1712 100%)",
+    groundLine: "#c94a1f",
+    Decor: () => (
+      <>
+        <div style={{ position: "absolute", top: 6, left: "8%", width: 26, height: 40, background: "linear-gradient(180deg,#3a1a10,#1a0d08)", clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
+        <div style={{ position: "absolute", top: 2, left: "22%", width: 34, height: 50, background: "linear-gradient(180deg,#3a1a10,#1a0d08)", clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
+        <div style={{ position: "absolute", top: 14, right: "12%", width: 5, height: 5, borderRadius: "50%", background: "#ff8a3d", boxShadow: "0 0 8px 3px rgba(255,138,61,0.8)" }} />
+        <div style={{ position: "absolute", top: 26, right: "22%", width: 4, height: 4, borderRadius: "50%", background: "#ffb35a", boxShadow: "0 0 6px 2px rgba(255,179,90,0.7)" }} />
+      </>
+    ),
+  },
+  // Goblin → dark forest
+  goblin: {
+    sky: "linear-gradient(180deg, #16241a 0%, #223d24 48%, #2c4a2a 52%)",
+    ground: "linear-gradient(180deg, #2f4020 0%, #1c2814 100%)",
+    groundLine: "#4a6b2a",
+    Decor: () => (
+      <>
+        <div style={{ position: "absolute", top: -4, left: "6%", width: 30, height: 56, background: "#16210f", clipPath: "polygon(50% 0%, 90% 40%, 70% 40%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0% 80%, 30% 40%, 10% 40%)" }} />
+        <div style={{ position: "absolute", top: -6, left: "18%", width: 24, height: 46, background: "#1a2712", clipPath: "polygon(50% 0%, 90% 40%, 70% 40%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0% 80%, 30% 40%, 10% 40%)" }} />
+        <div style={{ position: "absolute", top: -2, right: "8%", width: 28, height: 52, background: "#16210f", clipPath: "polygon(50% 0%, 90% 40%, 70% 40%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0% 80%, 30% 40%, 10% 40%)" }} />
+      </>
+    ),
+  },
+  // Zombie → graveyard at night
+  zombie: {
+    sky: "linear-gradient(180deg, #10141f 0%, #1c2436 48%, #26314a 52%)",
+    ground: "linear-gradient(180deg, #3a3d40 0%, #24262a 100%)",
+    groundLine: "#5a5f66",
+    Decor: () => (
+      <>
+        <div style={{ position: "absolute", top: 4, left: "10%", width: 4, height: 4, borderRadius: "50%", background: "#dfe6f0" }} />
+        <div style={{ position: "absolute", top: 16, left: "30%", width: 3, height: 3, borderRadius: "50%", background: "#dfe6f0" }} />
+        <div style={{ position: "absolute", top: 9, right: "18%", width: 3, height: 3, borderRadius: "50%", background: "#dfe6f0" }} />
+        <div style={{ position: "absolute", bottom: "44%", left: "12%", width: 16, height: 22, background: "#6b6f75", borderRadius: "8px 8px 2px 2px" }} />
+        <div style={{ position: "absolute", bottom: "44%", left: "36%", width: 14, height: 18, background: "#5c6066", borderRadius: "7px 7px 2px 2px" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "18%", background: "linear-gradient(180deg, rgba(200,210,230,0.12), transparent)" }} />
+      </>
+    ),
+  },
+  // Skeleton king → castle throne room (indoor)
+  skeleton: {
+    sky: "linear-gradient(180deg, #201c28 0%, #33293a 48%, #40324a 52%)",
+    ground: "linear-gradient(180deg, #4a4250 0%, #2e2833 100%)",
+    groundLine: "#8a6a3a",
+    Decor: () => (
+      <>
+        <div style={{ position: "absolute", top: 6, left: "6%", width: 6, height: 26, background: "#7a5a2a", borderRadius: 2 }} />
+        <div style={{ position: "absolute", top: 4, left: "6%", width: 10, height: 10, marginLeft: -2, borderRadius: "50%", background: "#ff9a3d", boxShadow: "0 0 10px 4px rgba(255,154,61,0.8)" }} />
+        <div style={{ position: "absolute", top: 6, right: "6%", width: 6, height: 26, background: "#7a5a2a", borderRadius: 2 }} />
+        <div style={{ position: "absolute", top: 4, right: "6%", width: 10, height: 10, marginRight: -2, borderRadius: "50%", background: "#ff9a3d", boxShadow: "0 0 10px 4px rgba(255,154,61,0.8)" }} />
+        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 40, height: 16, background: "#3a2020", borderRadius: "0 0 8px 8px" }} />
+      </>
+    ),
+  },
+  // Lizard mage → misty swamp
+  lizard: {
+    sky: "linear-gradient(180deg, #3a4a2a 0%, #5a6a3a 48%, #6e7c42 52%)",
+    ground: "linear-gradient(180deg, #46502a 0%, #2c3318 100%)",
+    groundLine: "#7a8a44",
+    Decor: () => (
+      <>
+        <div style={{ position: "absolute", top: 10, left: "8%", width: 70, height: 16, background: "rgba(210,225,180,0.35)", borderRadius: 20 }} />
+        <div style={{ position: "absolute", top: 22, left: "30%", width: 50, height: 12, background: "rgba(210,225,180,0.28)", borderRadius: 20 }} />
+        <div style={{ position: "absolute", bottom: "40%", right: "10%", width: 60, height: 14, background: "rgba(210,225,180,0.3)", borderRadius: 20 }} />
+      </>
+    ),
+  },
+};
 
 export default function BattlePage() {
   const { stageId } = useParams<{ stageId: string }>();
@@ -210,20 +293,20 @@ export default function BattlePage() {
   const hpColor = hpPct > 60 ? "#48d020" : hpPct > 25 ? "#f8c020" : "#f84018";
   const enemyHpColor = enemyHpPct > 60 ? "#48d020" : enemyHpPct > 25 ? "#f8c020" : "#f84018";
 
+  const theme = SCENE_THEMES[resolveType(stageInfo?.enemyName ?? "")] ?? SCENE_THEMES.lizard;
+
   return (
     <div style={{ minHeight: "100svh", display: "flex", flexDirection: "column", background: "#1a1a2e", maxWidth: 560, margin: "0 auto", position: "relative" }}>
 
       {/* ── BATTLE SCENE ── */}
-      <div style={{ position: "relative", flexShrink: 0, height: "clamp(110px, min(38vw, 34vh), 260px)", overflow: "hidden", background: "linear-gradient(180deg, #5bb8f5 0%, #78c8f8 52%, #88d048 52%, #68b030 100%)" }}>
+      <div style={{ position: "relative", flexShrink: 0, height: "clamp(110px, min(38vw, 34vh), 260px)", overflow: "hidden", background: theme.sky }}>
 
-        {/* Clouds */}
-        <div style={{ position: "absolute", top: 10, left: "10%", width: 60, height: 20, background: "rgba(255,255,255,0.7)", borderRadius: 20 }} />
-        <div style={{ position: "absolute", top: 18, left: "15%", width: 80, height: 24, background: "rgba(255,255,255,0.6)", borderRadius: 20 }} />
-        <div style={{ position: "absolute", top: 8, right: "20%", width: 50, height: 18, background: "rgba(255,255,255,0.7)", borderRadius: 20 }} />
+        {/* Themed backdrop decorations */}
+        <theme.Decor />
 
         {/* Ground stripe */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "48%", background: "linear-gradient(180deg, #a8e060 0%, #78b830 100%)" }} />
-        <div style={{ position: "absolute", bottom: "48%", left: 0, right: 0, height: 3, background: "#5a9020" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "48%", background: theme.ground }} />
+        <div style={{ position: "absolute", bottom: "48%", left: 0, right: 0, height: 3, background: theme.groundLine }} />
 
         {/* Enemy platform + sprite */}
         <div style={{ position: "absolute", bottom: "47%", left: "62%", transform: "translateX(-50%)", width: "18%", height: 10, background: "rgba(0,0,0,0.18)", borderRadius: "50%" }} />

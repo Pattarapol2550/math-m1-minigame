@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { IconArrowLeft, IconMap, IconBook, IconEdit } from "@/components/Icon";
+import { IconArrowLeft, IconTreasureMap, IconBook, IconEdit } from "@/components/Icon";
 
 interface Stage {
   id: string;
@@ -77,7 +77,7 @@ export default function StagesPage() {
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/teacher" className="flex items-center gap-1 text-slate-300 hover:text-white text-sm"><IconArrowLeft size={16} /> Dashboard</Link>
-          <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconMap size={14} /> จัดการด่าน</span>
+          <span className="font-pixel text-yellow-400 text-xs flex items-center gap-1.5"><IconTreasureMap size={14} /> จัดการด่าน</span>
         </div>
         <button
           onClick={() => { setEditing({ ...EMPTY_STAGE }); setError(""); }}
@@ -91,7 +91,7 @@ export default function StagesPage() {
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-            <div className="text-yellow-400 mb-2"><IconMap size={26} /></div>
+            <div className="text-yellow-400 mb-2"><IconTreasureMap size={26} /></div>
             <div className="font-pixel text-yellow-400 text-lg">{totalStages}</div>
             <div className="text-slate-300 text-xs mt-1">ด่านทั้งหมด</div>
           </div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import EnemySprite from "@/components/sprites/EnemySprite";
 import {
-  IconSword, IconUser, IconChart, IconMap, IconPlay, IconSettings, IconCrown, IconMessage,
+  IconSword, IconUser, IconChart, IconTreasureMap, IconPlay, IconSettings, IconCrown, IconMessage,
   IconTent, IconTree, IconMountain, IconCastle, IconFlame, IconZap, IconGem,
 } from "@/components/Icon";
 
@@ -62,7 +62,7 @@ export default function MapPage() {
       <main style={{ flex: 1, maxWidth: 640, width: "100%", margin: "0 auto", padding: "20px 16px 32px" }}>
         {/* Hero banner */}
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ marginBottom: 8, color: "#f5a623", display: "flex", justifyContent: "center" }}><IconMap size={56} /></div>
+          <div style={{ marginBottom: 8, color: "#f5a623", display: "flex", justifyContent: "center" }}><IconTreasureMap size={64} /></div>
           <h1 style={{ fontFamily: "var(--font-pixel), monospace", fontSize: "clamp(12px,3vw,18px)", color: "#f5a623", marginBottom: 4 }}>เลือกด่าน</h1>
           <p style={{ color: "#a3b0c2", fontSize: "clamp(11px,2.5vw,13px)" }}>เลือกโหมดและด่านที่ต้องการเล่น</p>
         </div>
