@@ -4,6 +4,11 @@ import { test, expect, request } from "@playwright/test";
 // and the questions API must never leak the correct answer to the client.
 
 test.describe("API auth guards (unauthenticated)", () => {
+  test("GET /api/game/stages requires auth", async ({ request }) => {
+    const res = await request.get("/api/game/stages");
+    expect(res.status()).toBe(401);
+  });
+
   test("GET /api/game/stages/*/questions requires auth", async ({ request }) => {
     const res = await request.get("/api/game/stages/s1-compare/questions");
     expect(res.status()).toBe(401);
