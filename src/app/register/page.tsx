@@ -51,8 +51,8 @@ export default function RegisterPage() {
       setError("รหัสผ่านไม่ตรงกัน");
       return;
     }
-    if (password.length < 8) {
-      setError("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+    if (password.length < 6) {
+      setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
       return;
     }
 

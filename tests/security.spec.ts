@@ -1,4 +1,4 @@
-import { test, expect, request } from "@playwright/test";
+import { test, expect, TEST_PASSWORD } from "./fixtures";
 
 // These guard the fixes from the security pass: game APIs must require auth,
 // and the questions API must never leak the correct answer to the client.
@@ -52,10 +52,10 @@ test.describe("API auth guards (unauthenticated)", () => {
 });
 
 test.describe("answer leakage", () => {
-  test("authenticated questions response never contains the answer or hint", async ({ page, request }) => {
+  test("authenticated questions response never contains the answer or hint", async ({ page, request, studentId }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("เลขประจำตัวนักเรียน").fill("student1");
-    await page.getByPlaceholder("••••••").fill("student123");
+    await page.getByPlaceholder("เลขประจำตัวนักเรียน").fill(studentId);
+    await page.getByPlaceholder("••••••").fill(TEST_PASSWORD);
     await page.getByRole("button", { name: /เริ่มผจญภัย/ }).click();
     await page.waitForURL(url => !url.pathname.startsWith("/login"));
 

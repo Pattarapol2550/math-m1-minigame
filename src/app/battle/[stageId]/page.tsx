@@ -123,7 +123,16 @@ const SCENE_THEMES: Record<string, SceneTheme> = {
   },
 };
 
+// Wrapper forces a full remount whenever the stage changes. Next.js reuses the
+// same component instance for client-side navigations within /battle/[stageId],
+// so without this the old stage's sprite/background/state would flash on screen
+// for a frame before the reset effect below catches up.
 export default function BattlePage() {
+  const { stageId } = useParams<{ stageId: string }>();
+  return <BattlePageInner key={stageId} />;
+}
+
+function BattlePageInner() {
   const { stageId } = useParams<{ stageId: string }>();
   const { data: session } = useSession();
   const router = useRouter();
@@ -147,8 +156,14 @@ export default function BattlePage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockedRef = useRef(false);
   const questionsRef = useRef<Question[]>([]);
+  // Guards every delayed callback (setTimeout/async continuation) below from
+  // touching state after the player has navigated away mid-battle — without
+  // this, a pending timer could fire onTimeout/saveSession against an
+  // unmounted instance and POST a stray/duplicate session.
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     stopTimer();
     setPhase("loading");
     setQIndex(0); setHp(MAX_HP); setScore(0); setCorrectCount(0);
@@ -160,6 +175,7 @@ export default function BattlePage() {
       fetch(`/api/game/stages/${stageId}/questions`).then(r => r.json()),
       fetch("/api/game/stages").then(r => r.json()),
     ]).then(([qs, cats]) => {
+      if (!mountedRef.current) return;
       questionsRef.current = qs;
       setQuestions(qs);
       for (const c of cats) {
@@ -171,8 +187,13 @@ export default function BattlePage() {
         }
       }
       setPhase("intro");
-      setTimeout(() => beginQuestion(0), 1200);
+      setTimeout(() => { if (mountedRef.current) beginQuestion(0); }, 1200);
     });
+
+    return () => {
+      mountedRef.current = false;
+      stopTimer();
+    };
   }, [stageId]);
 
   const stopTimer = useCallback(() => {
@@ -202,6 +223,7 @@ export default function BattlePage() {
     setChosenAnswer("");
     const q = questionsRef.current[idx];
     const graded = q ? await gradeAnswer(q.id, "") : { isCorrect: false, correctAnswer: "", hint: null };
+    if (!mountedRef.current) return;
     handleResult(idx, "", false, TIMER_SECS, "timeout", graded.correctAnswer, graded.hint);
   }
 
@@ -214,6 +236,7 @@ export default function BattlePage() {
     if (!q) return;
     setChosenAnswer(chosen);
     const graded = await gradeAnswer(q.id, chosen);
+    if (!mountedRef.current) return;
     handleResult(idx, chosen, graded.isCorrect, spent, graded.isCorrect ? "correct" : "wrong", graded.correctAnswer, graded.hint);
   }
 
@@ -231,20 +254,20 @@ export default function BattlePage() {
       setCorrectCount(c => c + 1);
       setFeedback({ type: "correct", msg: "ถูกต้อง!", pts, correctAnswer });
       setHeroAnim("anim-hero-attack");
-      setTimeout(() => { setEnemyAnim("anim-flash"); }, 350);
-      setTimeout(() => { setEnemyAnim(""); setHeroAnim(""); }, 700);
+      setTimeout(() => { if (mountedRef.current) setEnemyAnim("anim-flash"); }, 350);
+      setTimeout(() => { if (mountedRef.current) { setEnemyAnim(""); setHeroAnim(""); } }, 700);
     } else {
       const newHp = Math.max(0, hp - 1);
       setHp(newHp);
       const msg = hint ?? (correctAnswer ? `คำตอบที่ถูก: ${correctAnswer}` : "ตอบผิด");
       setFeedback({ type: type === "timeout" ? "timeout" : "wrong", msg, correctAnswer });
       setEnemyAnim("anim-enemy-attack");
-      setTimeout(() => { setHeroAnim("anim-flash"); }, 350);
-      setTimeout(() => { setEnemyAnim(""); setHeroAnim(""); }, 700);
+      setTimeout(() => { if (mountedRef.current) setHeroAnim("anim-flash"); }, 350);
+      setTimeout(() => { if (mountedRef.current) { setEnemyAnim(""); setHeroAnim(""); } }, 700);
 
       if (newHp <= 0) {
-        setTimeout(() => { setHeroAnim("anim-die"); }, 900);
-        setTimeout(() => { setPhase("dead"); saveSession(allAttempts); }, 1800);
+        setTimeout(() => { if (mountedRef.current) setHeroAnim("anim-die"); }, 900);
+        setTimeout(() => { if (mountedRef.current) setPhase("dead"); saveSession(allAttempts); }, 1800);
         return;
       }
     }
@@ -252,10 +275,10 @@ export default function BattlePage() {
     setPhase("feedback");
     const next = idx + 1;
     if (next >= questionsRef.current.length) {
-      setTimeout(() => { setEnemyAnim("anim-die"); }, 900);
-      setTimeout(() => { setPhase("win"); saveSession(allAttempts); }, 1800);
+      setTimeout(() => { if (mountedRef.current) setEnemyAnim("anim-die"); }, 900);
+      setTimeout(() => { if (mountedRef.current) setPhase("win"); saveSession(allAttempts); }, 1800);
     } else {
-      setTimeout(() => beginQuestion(next), 1600);
+      setTimeout(() => { if (mountedRef.current) beginQuestion(next); }, 1600);
     }
   }
 
@@ -281,7 +304,7 @@ export default function BattlePage() {
     setAttempts([]); setTotalTime(0); setChosenAnswer(null); setFeedback(null);
     setHeroAnim(""); setEnemyAnim(""); lockedRef.current = false;
     setPhase("intro");
-    setTimeout(() => beginQuestion(0), 800);
+    setTimeout(() => { if (mountedRef.current) beginQuestion(0); }, 800);
   }
 
   const q = questions[qIndex];
