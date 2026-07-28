@@ -47,11 +47,6 @@ export default function RegisterPage() {
       return;
     }
 
-    if (/^\d{13}$/.test(studentId.trim())) {
-      setError("นี่คือเลขบัตรประชาชน (13 หลัก) กรุณากรอกเลขประจำตัวนักเรียนแทน");
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError("รหัสผ่านไม่ตรงกัน");
       return;
@@ -157,13 +152,9 @@ export default function RegisterPage() {
                 type="text"
                 value={studentId}
                 onChange={e => setStudentId(e.target.value)}
-                placeholder="เช่น 10001 (ไม่ใช่เลขบัตรประชาชน)"
                 required
                 style={inputStyle}
               />
-              <p style={{ color: "#8a94a6", fontSize: "clamp(10px,2.2vw,11px)", marginTop: 4 }}>
-                ดูได้จากสมุดพก/บัตรนักเรียน ไม่ใช่เลขบัตรประชาชน 13 หลัก
-              </p>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>

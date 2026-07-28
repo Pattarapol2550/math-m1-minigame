@@ -86,6 +86,20 @@ export default function TeacherDashboard() {
     return acc;
   }, { plays: 0, total: 0, correct: 0 });
 
+  const ranking = students
+    .map(s => ({
+      id: s.id,
+      name: s.name,
+      nickname: s.nickname,
+      classroom: s.classroom,
+      score: s.sessions.reduce((a: number, g: any) => a + g.score, 0),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+  const topScore = ranking.length > 0 ? Math.max(ranking[0].score, 1) : 1;
+  const rankBadge = (rank: number) =>
+    rank === 1 ? "#f5c518" : rank === 2 ? "#c0c7d1" : rank === 3 ? "#cd7f32" : "#475569";
+
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
@@ -134,6 +148,51 @@ export default function TeacherDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Top ranking */}
+        {ranking.length > 0 && (
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-1.5 text-slate-300 text-xs mb-4">
+              <IconTarget size={14} /> อันดับคะแนนสูงสุด (Top 10)
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {ranking.map((s, i) => {
+                const rank = i + 1;
+                const pct = Math.max(4, Math.round((s.score / topScore) * 100));
+                return (
+                  <div key={s.id} className="flex items-center gap-3">
+                    <div
+                      className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center font-pixel text-[10px]"
+                      style={{ background: rankBadge(rank), color: rank <= 3 ? "#1a1a2e" : "#e2e8f0" }}
+                    >
+                      {rank}
+                    </div>
+                    <div className="w-28 sm:w-40 shrink-0 truncate text-white text-sm">
+                      {s.nickname || s.name}
+                      {s.classroom && <span className="text-slate-300 text-xs ml-1">· {s.classroom}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0 h-3 rounded-full bg-slate-700 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${pct}%`,
+                          background: rank === 1
+                            ? "linear-gradient(90deg,#f5c518,#f5a623)"
+                            : rank === 2
+                            ? "linear-gradient(90deg,#c0c7d1,#94a3b8)"
+                            : rank === 3
+                            ? "linear-gradient(90deg,#cd7f32,#b5651d)"
+                            : "linear-gradient(90deg,#3b82f6,#2563eb)",
+                        }}
+                      />
+                    </div>
+                    <div className="w-14 shrink-0 text-right font-pixel text-yellow-400 text-xs">{s.score}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Multi-field search */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-4">
