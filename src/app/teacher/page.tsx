@@ -100,6 +100,15 @@ export default function TeacherDashboard() {
   const rankBadge = (rank: number) =>
     rank === 1 ? "#f5c518" : rank === 2 ? "#c0c7d1" : rank === 3 ? "#cd7f32" : "#475569";
 
+  // Sessions already come back newest-first per student, so [0] is their
+  // latest play — sort students by that so the table shows recent activity
+  // first instead of always the same names in registration order.
+  const studentsByRecent = [...students].sort((a, b) => {
+    const aLast = a.sessions[0]?.playedAt ? new Date(a.sessions[0].playedAt).getTime() : 0;
+    const bLast = b.sessions[0]?.playedAt ? new Date(b.sessions[0].playedAt).getTime() : 0;
+    return bLast - aLast;
+  });
+
   return (
     <div className="min-h-screen bg-slate-950">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
@@ -267,7 +276,7 @@ export default function TeacherDashboard() {
               {!loading && students.length === 0 && (
                 <tr><td colSpan={9} className="text-center text-slate-300 py-8">ไม่พบนักเรียน</td></tr>
               )}
-              {students.map(s => {
+              {studentsByRecent.map(s => {
                 const total = s.sessions.reduce((a: number, g: any) => a + g.total, 0);
                 const correct = s.sessions.reduce((a: number, g: any) => a + g.correct, 0);
                 const score = s.sessions.reduce((a: number, g: any) => a + g.score, 0);
