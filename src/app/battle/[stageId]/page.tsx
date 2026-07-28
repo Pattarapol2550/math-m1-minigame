@@ -553,6 +553,9 @@ function BattlePageInner() {
               <p style={{ fontFamily: "monospace", fontSize: "clamp(9px,2vw,11px)", color: "#808060" }}>
                 HP เหลือ {hp}/{MAX_HP} · Accuracy {Math.round(correctCount / questions.length * 100)}%
               </p>
+              <p style={{ fontFamily: "monospace", fontSize: "clamp(8px,1.8vw,10px)", color: "#a09070" }}>
+                (คะแนนของด่านนี้ — อันดับรวมจะนับคะแนนที่ดีที่สุดของทุกด่าน)
+              </p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: nextStageId ? "1fr 1fr 1fr" : "1fr 1fr", borderTop: "2.5px solid #202820" }}>
               <button onClick={() => router.push("/map")}
