@@ -35,6 +35,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
   }
 
+  // A 13-digit all-numeric value is the Thai national ID card format, not a
+  // school student ID — catch the common mistake of pasting the wrong number.
+  if (/^\d{13}$/.test(studentId.trim())) {
+    return NextResponse.json({ error: "นี่คือเลขบัตรประชาชน (13 หลัก) กรุณากรอกเลขประจำตัวนักเรียนแทน" }, { status: 400 });
+  }
+
   const existing = await prisma.user.findFirst({
     where: {
       OR: [{ studentId: studentId.trim() }, { username: studentId.trim() }],
