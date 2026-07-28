@@ -293,7 +293,7 @@ function BattlePageInner() {
   async function saveSession(finalAttempts: { questionId: string; answer: string; timeSpent: number }[]) {
     if (!session?.user) return;
     try {
-      await fetch("/api/game/session", {
+      const res = await fetch("/api/game/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -301,6 +301,11 @@ function BattlePageInner() {
           attempts: finalAttempts.map(a => ({ questionId: a.questionId, answer: a.answer, timeSpent: a.timeSpent })),
         }),
       });
+      if (!res.ok || !mountedRef.current) return;
+      const data = await res.json();
+      // Reconcile the locally-accumulated score with the server's
+      // authoritative value so the result screen matches the leaderboard.
+      if (typeof data.score === "number") setScore(data.score);
     } catch {
       // best-effort; the run already displayed locally
     }
@@ -547,6 +552,9 @@ function BattlePageInner() {
               </p>
               <p style={{ fontFamily: "monospace", fontSize: "clamp(9px,2vw,11px)", color: "#808060" }}>
                 HP เหลือ {hp}/{MAX_HP} · Accuracy {Math.round(correctCount / questions.length * 100)}%
+              </p>
+              <p style={{ fontFamily: "monospace", fontSize: "clamp(8px,1.8vw,10px)", color: "#a09070" }}>
+                (คะแนนของด่านนี้ — อันดับรวมจะนับคะแนนที่ดีที่สุดของทุกด่าน)
               </p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: nextStageId ? "1fr 1fr 1fr" : "1fr 1fr", borderTop: "2.5px solid #202820" }}>
