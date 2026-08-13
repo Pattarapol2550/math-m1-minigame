@@ -210,6 +210,7 @@ export default function TeacherDashboard() {
                 <th className="text-left px-4 py-3">ชื่อเล่น</th>
                 <th className="text-left px-4 py-3">ห้อง</th>
                 <th className="text-left px-4 py-3">เลขประจำตัว</th>
+                <th className="text-left px-4 py-3">เล่นล่าสุด</th>
                 <th className="text-right px-4 py-3">เล่น</th>
                 <th className="text-right px-4 py-3">คะแนนรวม</th>
                 <th className="text-right px-4 py-3">Accuracy</th>
@@ -219,22 +220,28 @@ export default function TeacherDashboard() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={9} className="text-center text-slate-300 py-8">กำลังโหลด...</td></tr>
+                <tr><td colSpan={10} className="text-center text-slate-300 py-8">กำลังโหลด...</td></tr>
               )}
               {!loading && students.length === 0 && (
-                <tr><td colSpan={9} className="text-center text-slate-300 py-8">ไม่พบนักเรียน</td></tr>
+                <tr><td colSpan={10} className="text-center text-slate-300 py-8">ไม่พบนักเรียน</td></tr>
               )}
               {pageStudents.map(s => {
                 const total = s.sessions.reduce((a: number, g: any) => a + g.total, 0);
                 const correct = s.sessions.reduce((a: number, g: any) => a + g.correct, 0);
                 const score = s.sessions.reduce((a: number, g: any) => a + g.score, 0);
                 const passed = s.sessions.filter((g: any) => g.passed).length;
+                const lastPlayed = lastPlayedAt(s);
                 return (
                   <tr key={s.id} className="border-t border-slate-700 hover:bg-slate-750 transition-colors">
                     <td className="px-4 py-3 text-white font-medium">{s.name}</td>
                     <td className="px-4 py-3 text-slate-300">{s.nickname ?? "-"}</td>
                     <td className="px-4 py-3 text-slate-300">{s.classroom ?? "-"}</td>
                     <td className="px-4 py-3 text-slate-300">{s.studentId ?? "-"}</td>
+                    <td className="px-4 py-3 text-slate-300 whitespace-nowrap">
+                      {lastPlayed > 0
+                        ? new Date(lastPlayed).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })
+                        : "-"}
+                    </td>
                     <td className="px-4 py-3 text-right text-slate-300">{s.sessions.length}</td>
                     <td className="px-4 py-3 text-right text-yellow-400 font-pixel text-xs">{score}</td>
                     <td className="px-4 py-3 text-right text-blue-400">{total > 0 ? Math.round(correct / total * 100) : 0}%</td>
