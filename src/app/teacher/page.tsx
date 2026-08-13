@@ -9,11 +9,18 @@ import {
 
 const emptyFilters = { firstName: "", lastName: "", nickname: "", grade: "", studentId: "" };
 
+const PAGE_SIZE = 20;
+
+function lastPlayedAt(s: any): number {
+  return s.sessions.length ? new Date(s.sessions[0].playedAt).getTime() : 0;
+}
+
 export default function TeacherDashboard() {
   const [students, setStudents] = useState<any[]>([]);
   const [filters, setFilters] = useState({ ...emptyFilters });
   const [loading, setLoading] = useState(true);
   const [newFeedbackCount, setNewFeedbackCount] = useState(0);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetch("/api/teacher/feedback?status=NEW")
@@ -64,7 +71,13 @@ export default function TeacherDashboard() {
     });
     fetch("/api/teacher/students?" + params)
       .then(r => r.json())
-      .then(d => { setStudents(Array.isArray(d) ? d : []); setLoading(false); });
+      .then(d => {
+        const list = Array.isArray(d) ? d : [];
+        list.sort((a, b) => lastPlayedAt(b) - lastPlayedAt(a));
+        setStudents(list);
+        setPage(1);
+        setLoading(false);
+      });
   }
 
   useEffect(() => { fetchStudents(); }, []);
@@ -76,6 +89,9 @@ export default function TeacherDashboard() {
     setFilters({ ...emptyFilters });
     setTimeout(fetchStudents, 0);
   }
+
+  const totalPages = Math.max(1, Math.ceil(students.length / PAGE_SIZE));
+  const pageStudents = students.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const overallStats = students.reduce((acc, s) => {
     const total = s.sessions.reduce((a: number, g: any) => a + g.total, 0);
@@ -208,7 +224,7 @@ export default function TeacherDashboard() {
               {!loading && students.length === 0 && (
                 <tr><td colSpan={9} className="text-center text-slate-300 py-8">ไม่พบนักเรียน</td></tr>
               )}
-              {students.map(s => {
+              {pageStudents.map(s => {
                 const total = s.sessions.reduce((a: number, g: any) => a + g.total, 0);
                 const correct = s.sessions.reduce((a: number, g: any) => a + g.correct, 0);
                 const score = s.sessions.reduce((a: number, g: any) => a + g.score, 0);
@@ -241,6 +257,32 @@ export default function TeacherDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && students.length > 0 && (
+          <div className="flex items-center justify-between mt-4 text-sm text-slate-300 flex-wrap gap-2">
+            <div>
+              แสดง {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, students.length)} จาก {students.length} คน
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-3 py-1.5 rounded bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 transition-colors"
+              >
+                ก่อนหน้า
+              </button>
+              <span>หน้า {page} / {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="px-3 py-1.5 rounded bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 transition-colors"
+              >
+                ถัดไป
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Reset password modal */}
