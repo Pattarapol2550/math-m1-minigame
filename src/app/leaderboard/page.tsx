@@ -56,6 +56,11 @@ export default function LeaderboardPage() {
           </button>
         </div>
 
+        <p className="text-slate-400 text-xs mb-4 leading-relaxed">
+          คะแนนรวมนี้คือผลรวมของ <span className="text-slate-300">คะแนนที่ดีที่สุด</span> ในแต่ละด่านที่เคยเล่นทั้งหมด
+          ไม่ใช่คะแนนจากด่านล่าสุดเพียงด่านเดียว จึงอาจไม่ตรงกับคะแนนที่เพิ่งเห็นหลังเล่นจบ
+        </p>
+
         {loading ? (
           <div className="text-center text-slate-300 py-12 font-pixel text-xs">กำลังโหลด...</div>
         ) : !data || data.leaderboard.length === 0 ? (
@@ -76,8 +81,11 @@ export default function LeaderboardPage() {
                   </div>
                   <div className="text-slate-300 text-xs">{e.classroom} · ผ่าน {e.stagesCleared} ด่าน</div>
                 </div>
-                <div className="flex items-center gap-1 text-yellow-400 font-pixel text-sm">
-                  <IconStar size={14} /> {e.totalScore}
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-1 text-yellow-400 font-pixel text-sm">
+                    <IconStar size={14} /> {e.totalScore}
+                  </div>
+                  <div className="text-slate-500 text-[10px]">คะแนนรวมทุกด่าน</div>
                 </div>
               </div>
             ))}
